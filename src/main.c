@@ -47,20 +47,20 @@ int initialize_sdl(void)
     return TRUE;
 }
 
-void create_entity(ComponentLists *components)
+void create_entity(float x, float y, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components)
 {
     int id = ENTITIES++;
     components->position_components[id].entity_id = id;
 
-    components->position_components[id].x = 50;
-    components->position_components[id].y = 50;
+    components->position_components[id].x = x;
+    components->position_components[id].y = y;
     components->total_position_components++;
 
     components->sprite_components[id].entity_id = id;
-    components->sprite_components[id].sprite_height = 20;
-    components->sprite_components[id].sprite_width = 20;
-    components->sprite_components[id].texture_width = 50;
-    components->sprite_components[id].texture_height = 50;
+    components->sprite_components[id].sprite_height = sprite_height;
+    components->sprite_components[id].sprite_width = sprite_width;
+    components->sprite_components[id].texture_width = texture_width;
+    components->sprite_components[id].texture_height = texture_height;
 
     components->total_sprite_components++;
 
@@ -161,11 +161,11 @@ void process_input(ComponentLists *components)
 
 void setup()
 {
-    create_entity(&components);
+    create_entity(50, 50, 20, 20, 20, 20, &components);
     player_entity_id = ENTITIES;
     printf("Player entity id: %d\n", player_entity_id);
 
-    create_entity(&components);
+    create_entity(120, 100, 20, 20, 20, 20, &components);
     printf("Not the entity id: %d\n", ENTITIES);
 
     last_frame_time = SDL_GetTicks();
