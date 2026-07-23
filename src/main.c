@@ -113,19 +113,18 @@ void process_input(ComponentLists *components)
                 {
                 case SDLK_W:
                     printf("Pressed W\n");
-                    components->keyboard_input_components->up = true;
+                    components->keyboard_input_components[player_entity_id].up = true;
                     break;
                 case SDLK_S:
-                    components->keyboard_input_components->down = true;
+                    components->keyboard_input_components[player_entity_id].down = true;
 
                     break;
                 case SDLK_A:
-                    components->keyboard_input_components->left = true;
+                    components->keyboard_input_components[player_entity_id].left = true;
 
                     break;
                 case SDLK_D:
-                    components->keyboard_input_components->right = true;
-
+                    components->keyboard_input_components[player_entity_id].right = true;
                     break;
 
                 case SDLK_ESCAPE:
@@ -141,16 +140,16 @@ void process_input(ComponentLists *components)
                 switch (event.key.key)
                 {
                 case SDLK_W:
-                    components->keyboard_input_components->up = false;
+                    components->keyboard_input_components[player_entity_id].up = false;
                     break;
                 case SDLK_S:
-                    components->keyboard_input_components->down = false;
+                    components->keyboard_input_components[player_entity_id].down = false;
                     break;
                 case SDLK_A:
-                    components->keyboard_input_components->left = false;
+                    components->keyboard_input_components[player_entity_id].left = false;
                     break;
                 case SDLK_D:
-                    components->keyboard_input_components->right = false;
+                    components->keyboard_input_components[player_entity_id].right = false;
                     break;
                 }
             }
@@ -161,8 +160,8 @@ void process_input(ComponentLists *components)
 
 void setup()
 {
-    create_entity(50, 50, 20, 20, 20, 20, &components);
     player_entity_id = ENTITIES;
+    create_entity(50, 50, 20, 20, 20, 20, &components);
     printf("Player entity id: %d\n", player_entity_id);
 
     create_entity(120, 100, 20, 20, 20, 20, &components);
