@@ -18,7 +18,7 @@ void add_position_component_to_components(int entity_id, float x, float y, Compo
     components->position_components[entity_id].entity_id = entity_id;
     components->position_components[entity_id].x = x;
     components->position_components[entity_id].y = y;
-    signatures[entity_id] |= POSITION_COMPONENT_SIGNATURE;
+    add_component_signature_to_entity(entity_id, POSITION_COMPONENT_SIGNATURE);
     components->total_position_components++;
 }
 void add_sprite_component_to_components(int entity_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components)
@@ -28,8 +28,14 @@ void add_sprite_component_to_components(int entity_id, uint32_t texture_width, u
     components->sprite_components[entity_id].sprite_width = sprite_width;
     components->sprite_components[entity_id].texture_width = texture_width;
     components->sprite_components[entity_id].texture_height = texture_height;
-    signatures[entity_id] |= SPRITE_COMPONENT_SIGNATURE;
+    add_component_signature_to_entity(entity_id, SPRITE_COMPONENT_SIGNATURE);
     components->total_sprite_components++;
+}
+
+void add_keyboard_input_component_to_components(int entity_id, ComponentLists *components)
+{
+    components->keyboard_input_components[entity_id].entity_id = entity_id;
+    add_component_signature_to_entity(entity_id, KEYBOARD_INPUT_COMPONENT_SIGNATURE);
 }
 
 void update_position_system(PositionComponent *position, KeyboardInputComponent *keyboardInput, ComponentLists *components, float deltaTime)

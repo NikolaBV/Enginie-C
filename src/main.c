@@ -116,7 +116,8 @@ void setup()
 {
     player_entity_id = ENTITIES;
     create_entity(50, 50, 20, 20, 20, 20, &components);
-    add_component_signature_to_entity(player_entity_id, KEYBOARD_INPUT_COMPONENT_SIGNATURE);
+    add_keyboard_input_component_to_components(player_entity_id, &components);
+
     printf("Player entity id: %d\n", player_entity_id);
 
     create_entity(120, 100, 20, 20, 20, 20, &components);

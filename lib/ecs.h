@@ -64,4 +64,5 @@ void add_component_signature_to_entity(int entity_id, ComponentSignatures compon
 
 void add_position_component_to_components(int entity_id, float x, float y, ComponentLists *components);
 void add_sprite_component_to_components(int entity_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components);
+void add_keyboard_input_component_to_components(int entity_id, ComponentLists *components);
 bool does_entity_have_component(int entity_id, ComponentSignatures componentSignature);
