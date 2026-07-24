@@ -122,7 +122,7 @@ void setup()
     uint32_t texture_id_of_player = load_image_as_texture("assets/test-sprite.png", renderer);
     playerTexture = get_texture_by_texture_id(texture_id_of_player);
 
-    create_entity(50, 50, texture_id_of_player, 20, 20, 20, 20, &components);
+    create_entity(50, 50, texture_id_of_player, 32, 64, 128, 64, &components);
     add_keyboard_input_component_to_components(player_entity_id, &components);
     add_animation_component_to_entity(player_entity_id, 32);
 
@@ -151,17 +151,17 @@ void render()
         {
             update_render_system(&components.sprite_components[i], &components.position_components[i], &components, renderer);
         }
-        if (does_entity_have_component(components.sprite_components[i].entity_id, AnimationComponentSignature))
-        {
-            animate_entity(&components.animation_components[i], &components.sprite_components[i], renderer);
-            animationTime += FIXED_DT;
+        // if (does_entity_have_component(components.sprite_components[i].entity_id, AnimationComponentSignature))
+        // {
+        //     animate_entity(&components.animation_components[i], &components.sprite_components[i], renderer);
+        //     animationTime += FIXED_DT;
 
-            if (animationTime > animationPeriod)
-            {
-                frameIndex = (frameIndex + 1) % 4;
-                animationTime = 0.f;
-            }
-        }
+        //     if (animationTime > animationPeriod)
+        //     {
+        //         frameIndex = (frameIndex + 1) % 4;
+        //         animationTime = 0.f;
+        //     }
+        // }
     }
 
     SDL_RenderPresent(renderer);

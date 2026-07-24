@@ -31,6 +31,7 @@ void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint
     components->sprite_components[entity_id].texture_width = texture_id;
     components->sprite_components[entity_id].texture_width = texture_width;
     components->sprite_components[entity_id].texture_height = texture_height;
+
     add_component_signature_to_entity(entity_id, SPRITE_COMPONENT_SIGNATURE);
     components->total_sprite_components++;
 }
@@ -69,10 +70,11 @@ void update_position_system(PositionComponent *position, KeyboardInputComponent 
 }
 void update_render_system(SpriteComponent *sprite, PositionComponent *position, ComponentLists *components, SDL_Renderer *renderer)
 {
-    SDL_FRect destRect = {position->x, position->y, 32, 64};
-    SDL_FRect srcRect = {0, 0, 32, 64};
-
     SDL_Texture *entity_texture = get_texture_by_texture_id(sprite->texture_id);
+
+    SDL_FRect srcRect = {0, 0, sprite->texture_width, sprite->texture_height};
+    SDL_FRect destRect = {components->position_components[sprite->entity_id].x, components->position_components[sprite->entity_id].y, sprite->texture_width, sprite->texture_height};
+
     SDL_RenderTexture(renderer, entity_texture, &srcRect, &destRect);
 }
 
@@ -83,10 +85,10 @@ SDL_Texture *get_texture_by_texture_id(uint32_t texture_id)
 
 void animate_entity(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer)
 {
-    SDL_Texture *entity_texture = get_texture_by_texture_id(sprite->texture_id);
-    SDL_FRect srcrect = {animation->frame_index * animation->frame_width, 0, 32, 64};
-    SDL_FRect dstrect = {components.position_components[player_entity_id].x, components.position_components[player_entity_id].y, 64, 128};
-    SDL_RenderTexture(renderer, entity_texture, &srcrect, &dstrect);
+    // SDL_Texture *entity_texture = get_texture_by_texture_id(sprite->texture_id);
+    // SDL_FRect srcrect = {animation->frame_index * animation->frame_width, 0, 32, 64};
+    // SDL_FRect dstrect = {components.position_components[player_entity_id].x, components.position_components[player_entity_id].y, 64, 128};
+    // SDL_RenderTexture(renderer, entity_texture, &srcrect, &dstrect);
 }
 
 void add_component_signature_to_entity(int entity_id, ComponentSignatures componentSignature)
