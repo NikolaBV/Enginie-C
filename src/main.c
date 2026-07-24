@@ -15,6 +15,12 @@ Uint64 last_frame_time = 0;
 const float FIXED_DT = 1.0f / 60.0f;
 float accumulator = 0.0f;
 
+SDL_Texture *playerTexture = NULL;
+
+int frameIndex = 0;
+float animationTime = 0.f;
+const float animationPeriod = 0.1f;
+
 int initialize_sdl(void)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -67,11 +73,9 @@ void process_input(ComponentLists *components)
                         break;
                     case SDLK_S:
                         components->keyboard_input_components[player_entity_id].down = true;
-
                         break;
                     case SDLK_A:
                         components->keyboard_input_components[player_entity_id].left = true;
-
                         break;
                     case SDLK_D:
                         components->keyboard_input_components[player_entity_id].right = true;
@@ -115,13 +119,12 @@ void process_input(ComponentLists *components)
 void setup()
 {
     player_entity_id = ENTITIES;
-    create_entity(50, 50, 20, 20, 20, 20, &components);
+    uint32_t texture_id_of_player = load_image_as_texture("assets/test-sprite.png", renderer);
+    playerTexture = get_texture_by_texture_id(texture_id_of_player);
+
+    create_entity(50, 50, texture_id_of_player, 20, 20, 20, 20, &components);
     add_keyboard_input_component_to_components(player_entity_id, &components);
-
-    printf("Player entity id: %d\n", player_entity_id);
-
-    create_entity(120, 100, 20, 20, 20, 20, &components);
-    printf("Not the entity id: %d\n", ENTITIES);
+    add_animation_component_to_entity(player_entity_id, 32);
 
     last_frame_time = SDL_GetTicks();
 }
@@ -135,9 +138,11 @@ void update(float deltaTime)
         }
     }
 }
+
 void render()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
     for (int i = 0; i < components.total_sprite_components; ++i)
@@ -146,7 +151,19 @@ void render()
         {
             update_render_system(&components.sprite_components[i], &components.position_components[i], &components, renderer);
         }
+        if (does_entity_have_component(components.sprite_components[i].entity_id, AnimationComponentSignature))
+        {
+            animate_entity(&components.animation_components[i], &components.sprite_components[i], renderer);
+            animationTime += FIXED_DT;
+
+            if (animationTime > animationPeriod)
+            {
+                frameIndex = (frameIndex + 1) % 4;
+                animationTime = 0.f;
+            }
+        }
     }
+
     SDL_RenderPresent(renderer);
 }
 void destroy_window()
