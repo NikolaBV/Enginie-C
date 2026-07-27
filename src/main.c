@@ -17,10 +17,6 @@ float accumulator = 0.0f;
 
 SDL_Texture *playerTexture = NULL;
 
-int frameIndex = 0;
-float animationTime = 0.f;
-const float animationPeriod = 0.1f;
-
 int initialize_sdl(void)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -69,16 +65,17 @@ void process_input(ComponentLists *components)
                     switch (event.key.key)
                     {
                     case SDLK_W:
-                        components->keyboard_input_components[player_entity_id].up = true;
+                        components->keyboard_input_components[player_entity_id].movement_direction.up = true;
                         break;
                     case SDLK_S:
-                        components->keyboard_input_components[player_entity_id].down = true;
+                        components->keyboard_input_components[player_entity_id].movement_direction.down = true;
                         break;
                     case SDLK_A:
-                        components->keyboard_input_components[player_entity_id].left = true;
+                        components->keyboard_input_components[player_entity_id].movement_direction.left = true;
+
                         break;
                     case SDLK_D:
-                        components->keyboard_input_components[player_entity_id].right = true;
+                        components->keyboard_input_components[player_entity_id].movement_direction.right = true;
                         break;
 
                     case SDLK_ESCAPE:
@@ -92,21 +89,23 @@ void process_input(ComponentLists *components)
         case SDL_EVENT_KEY_UP:
             if (event.key.repeat == 0)
             {
+
                 if (does_entity_have_component(player_entity_id, KEYBOARD_INPUT_COMPONENT_SIGNATURE))
                 {
                     switch (event.key.key)
                     {
                     case SDLK_W:
-                        components->keyboard_input_components[player_entity_id].up = false;
+                        components->keyboard_input_components[player_entity_id].movement_direction.up = false;
                         break;
                     case SDLK_S:
-                        components->keyboard_input_components[player_entity_id].down = false;
+                        components->keyboard_input_components[player_entity_id].movement_direction.down = false;
                         break;
                     case SDLK_A:
-                        components->keyboard_input_components[player_entity_id].left = false;
+                        components->keyboard_input_components[player_entity_id].movement_direction.left = false;
                         break;
                     case SDLK_D:
-                        components->keyboard_input_components[player_entity_id].right = false;
+                        components->keyboard_input_components[player_entity_id].movement_direction.right = false;
+
                         break;
                     }
                 }
@@ -122,7 +121,7 @@ void setup()
     uint32_t texture_id_of_player = load_image_as_texture("assets/test-sprite.png", renderer);
     playerTexture = get_texture_by_texture_id(texture_id_of_player);
 
-    create_entity(50, 50, texture_id_of_player, 32, 64, 128, 64, &components);
+    create_entity(50, 50, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 64, &components);
     add_keyboard_input_component_to_components(player_entity_id, &components);
     add_animation_component_to_entity(player_entity_id, 32);
 
@@ -135,6 +134,34 @@ void update(float deltaTime)
         if (does_entity_have_component(components.position_components[i].entity_id, POSITION_COMPONENT_SIGNATURE))
         {
             update_position_system(&components.position_components[i], &components.keyboard_input_components[i], &components, deltaTime);
+        }
+
+        if (does_entity_have_component(components.animation_components[i].entity_id, AnimationComponentSignature))
+        {
+            if (does_entity_have_component(components.animation_components[i].entity_id, KeyboardInputComponentSignature))
+            {
+                if (components.keyboard_input_components[i].movement_direction.up)
+                {
+                    components.animation_components[i].active_animation = MOVE_UP;
+                }
+                else if (components.keyboard_input_components[i].movement_direction.down)
+                {
+                    components.animation_components[i].active_animation = MOVE_DOWN;
+                }
+                else if (components.keyboard_input_components[i].movement_direction.left)
+                {
+                    components.animation_components[i].active_animation = MOVE_LEFT;
+                }
+                else if (components.keyboard_input_components[i].movement_direction.right)
+                {
+                    components.animation_components[i].active_animation = MOVE_RIGHT;
+                }
+                else
+                {
+                    components.animation_components[i].active_animation = NONE;
+                }
+            }
+            update_animation_system(&components.animation_components[i], &components.sprite_components[i], renderer, deltaTime);
         }
     }
 }
@@ -151,17 +178,6 @@ void render()
         {
             update_render_system(&components.sprite_components[i], &components.position_components[i], &components, renderer);
         }
-        // if (does_entity_have_component(components.sprite_components[i].entity_id, AnimationComponentSignature))
-        // {
-        //     animate_entity(&components.animation_components[i], &components.sprite_components[i], renderer);
-        //     animationTime += FIXED_DT;
-
-        //     if (animationTime > animationPeriod)
-        //     {
-        //         frameIndex = (frameIndex + 1) % 4;
-        //         animationTime = 0.f;
-        //     }
-        // }
     }
 
     SDL_RenderPresent(renderer);

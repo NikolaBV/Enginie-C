@@ -17,7 +17,8 @@ typedef enum
     MOVE_DOWN,
     MOVE_LEFT,
     MOVE_RIGHT,
-    IDLE
+    IDLE,
+    NONE
 } AnimationName;
 
 extern int player_entity_id;
@@ -39,16 +40,24 @@ typedef struct AnimationComponent
     int entity_id;
     int frame_index;
     float frame_width;
+    float animation_period;
+    float animation_time;
     AnimationName active_animation;
 } AnimationComponent;
 
 typedef struct
 {
-    int entity_id;
     bool up;
     bool down;
     bool right;
     bool left;
+} Movement_Direction;
+
+typedef struct
+{
+    Movement_Direction movement_direction;
+    int entity_id;
+
 } KeyboardInputComponent;
 
 typedef struct
@@ -61,9 +70,11 @@ typedef struct
 typedef struct
 {
     int entity_id;
+
     uint32_t texture_id;
     uint32_t texture_width;
     uint32_t texture_height;
+
     uint32_t sprite_width;
     uint32_t sprite_height;
 } SpriteComponent;
@@ -92,7 +103,7 @@ void add_position_component_to_components(int entity_id, float x, float y, Compo
 void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components);
 void add_keyboard_input_component_to_components(int entity_id, ComponentLists *components);
 void add_animation_component_to_entity(int entity_id, float frame_width);
-void animate_entity(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer);
+void update_animation_system(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer, float deltaTime);
 
 uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer);
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id);
