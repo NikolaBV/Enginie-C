@@ -12,15 +12,7 @@
 #define SPRITE_COMPONENT_SIGNATURE (1 << 1)
 #define KEYBOARD_INPUT_COMPONENT_SIGNATURE (1 << 2)
 #define ANIMATION_COMPONENT_SIGNATURE (1 << 3)
-
-typedef enum
-{
-    IDLE,
-    MOVE_UP,
-    MOVE_DOWN,
-    MOVE_LEFT,
-    MOVE_RIGHT,
-} AnimationName;
+#define VELOCITY_COMPONENT_SIGNATURE (1 << 4)
 
 extern int ENTITIES;
 extern int signatures[100];
@@ -32,7 +24,9 @@ typedef enum
     PositionComponentSignature = POSITION_COMPONENT_SIGNATURE,
     SpriteComponentSignature = SPRITE_COMPONENT_SIGNATURE,
     KeyboardInputComponentSignature = KEYBOARD_INPUT_COMPONENT_SIGNATURE,
-    AnimationComponentSignature = ANIMATION_COMPONENT_SIGNATURE
+    AnimationComponentSignature = ANIMATION_COMPONENT_SIGNATURE,
+    VelocityComponentSignature = VELOCITY_COMPONENT_SIGNATURE
+
 } ComponentSignatures;
 
 typedef struct
@@ -49,7 +43,6 @@ typedef struct AnimationComponent
     int frame_index;
     float animation_period;
     float animation_time;
-    AnimationName active_animation;
 } AnimationComponent;
 
 typedef struct
@@ -62,7 +55,6 @@ typedef struct
 
 typedef struct
 {
-    Movement_Direction movement_direction;
 
 } KeyboardInputComponent;
 
@@ -75,6 +67,7 @@ typedef struct
 typedef struct
 {
     int number_of_sprites_per_row;
+    int scale;
 
     uint32_t texture_id;
     uint32_t texture_width;
@@ -87,29 +80,42 @@ typedef struct
 
 typedef struct
 {
+    float x;
+    float y;
+    float speed;
+} VelocityComponent;
+
+typedef struct
+{
     PositionComponent position_components[100];
     SpriteComponent sprite_components[100];
     KeyboardInputComponent keyboard_input_components[100];
     AnimationComponent animation_components[100];
+    VelocityComponent velocity_components[100];
 
     int total_position_components;
     int total_sprite_components;
     int total_keyboard_input_components;
     int total_animation_components;
+    int total_velocity_components;
 } ComponentLists;
 
 extern ComponentLists *components;
 
-int create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height);
-void update_position_system(PositionComponent *position, KeyboardInputComponent *keyboardInput, float deltaTime);
-void update_render_system(SpriteComponent *sprite, PositionComponent *position, SDL_Renderer *renderer);
-void update_animation_system(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer, float deltaTime);
+int create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale);
+
+void update_position_system(int entity_id, float deltaTime);
+void update_render_system(int entity_id, SDL_Renderer *renderer);
+void update_animation_system(int entity_id, float deltaTime);
+void update_input_system(int entity_id);
+
 void add_component_signature_to_entity(int entity_id, ComponentSignatures componentSignature);
 
 void add_position_component_to_components(int entity_id, float x, float y);
-void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height);
+void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale);
 void add_keyboard_input_component_to_components(int entity_id);
 void add_animation_component_to_entity(int entity_id);
+void add_velocity_component_to_entity(int entity_id, float speed);
 
 uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer);
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id);

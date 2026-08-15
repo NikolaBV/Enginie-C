@@ -4,6 +4,6 @@ LDLIBS = $(shell pkg-config --libs sdl3 sdl3-image) -lm
 build:
 	gcc $(CFLAGS) ./src/*.c -o ./out/game $(LDLIBS)
 run:
-	./out/game
+	LSAN_OPTIONS=suppressions=lsan.supp:exitcode=0 ./out/game
 clean:
 	rm ./out/game

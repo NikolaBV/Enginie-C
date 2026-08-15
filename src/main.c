@@ -53,42 +53,59 @@ void process_input()
         switch (event.type)
         {
         case SDL_EVENT_QUIT:
-            is_game_running = false;
+            is_game_running = FALSE;
             break;
 
         case SDL_EVENT_KEY_DOWN:
-            break;
-
-        case SDL_EVENT_KEY_UP:
+            if (!event.key.repeat && event.key.key == SDLK_ESCAPE)
+                is_game_running = FALSE;
             break;
         }
     }
 }
 
-void setup()
+int setup()
 {
-    uint32_t texture_id_of_player = load_image_as_texture("assets/test-sprite.png", renderer);
+    uint32_t texture_id_of_player = load_image_as_texture("assets/idle.png", renderer);
+    if (texture_id_of_player == UINT32_MAX)
+    {
+        fprintf(stderr, "Couldn't load texture of player entity \n");
+        return 1;
+    }
     SDL_Texture *playerTexture = get_texture_by_texture_id(texture_id_of_player);
 
-    int player_entity_id = create_entity(50, 50, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 64);
+    if (playerTexture == NULL)
+    {
+        fprintf(stderr, "Couldn't load texture of player entity \n");
+        return 1;
+    }
+
+    int player_entity_id = create_entity(100, 100, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 32, 2);
     add_keyboard_input_component_to_components(player_entity_id);
     add_animation_component_to_entity(player_entity_id);
+    add_velocity_component_to_entity(player_entity_id, 50);
 
     last_frame_time = SDL_GetTicks();
+
+    return 0;
 }
 void update(float deltaTime)
 {
-    for (int i = 0; i < components->total_position_components; ++i)
+    for (int entity_id_index = 0; entity_id_index < components->total_position_components; ++entity_id_index)
     {
         // TODO Fix function to not require entity_id stored in the component
-        if (does_entity_have_component(components.position_components[i].entity_id, POSITION_COMPONENT_SIGNATURE))
+        if (does_entity_have_component(entity_id_index, POSITION_COMPONENT_SIGNATURE))
         {
-            update_position_system(&components.position_components[i], &components.keyboard_input_components[i], &components, deltaTime);
+            update_position_system(entity_id_index, deltaTime);
         }
 
-        if (does_entity_have_component(components.animation_components[i].entity_id, AnimationComponentSignature))
+        if (does_entity_have_component(entity_id_index, AnimationComponentSignature))
         {
-            update_animation_system(&components.animation_components[i], &components.sprite_components[i], renderer, deltaTime);
+            update_animation_system(entity_id_index, deltaTime);
+        }
+        if (does_entity_have_component(entity_id_index, KeyboardInputComponentSignature))
+        {
+            update_input_system(entity_id_index);
         }
     }
 }
@@ -101,9 +118,9 @@ void render()
 
     for (int i = 0; i < components->total_sprite_components; ++i)
     {
-        if (does_entity_have_component(components->sprite_components[i].entity_id, SPRITE_COMPONENT_SIGNATURE))
+        if (does_entity_have_component(i, SPRITE_COMPONENT_SIGNATURE))
         {
-            update_render_system(components->sprite_components[i], components.position_components[i], &components, renderer);
+            update_render_system(i, renderer);
         }
     }
 
@@ -118,19 +135,20 @@ void destroy_window()
 
 int main()
 {
-    is_game_running = initialize_sdl();
-
     if (!initialize_sdl())
     {
-        printf("Couldn't initialize sdl\n");
+        return 1;
+    }
+    is_game_running = TRUE;
+
+    if (setup() == 1)
+    {
         return 1;
     }
 
-    setup();
-
     while (is_game_running)
     {
-        process_input(&components);
+        process_input();
         Uint64 currentTicks = SDL_GetTicks();
         float frameTime = (currentTicks - last_frame_time) / 1000.0f;
         last_frame_time = currentTicks;
