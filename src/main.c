@@ -11,11 +11,10 @@
 int is_game_running = FALSE;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+
 Uint64 last_frame_time = 0;
 const float FIXED_DT = 1.0f / 60.0f;
 float accumulator = 0.0f;
-
-SDL_Texture *playerTexture = NULL;
 
 int initialize_sdl(void)
 {
@@ -45,7 +44,7 @@ int initialize_sdl(void)
     return TRUE;
 }
 
-void process_input(ComponentLists *components)
+void process_input()
 {
     SDL_Event event;
 
@@ -58,58 +57,9 @@ void process_input(ComponentLists *components)
             break;
 
         case SDL_EVENT_KEY_DOWN:
-            if (event.key.repeat == 0)
-            {
-                if (does_entity_have_component(player_entity_id, KEYBOARD_INPUT_COMPONENT_SIGNATURE))
-                {
-                    switch (event.key.key)
-                    {
-                    case SDLK_W:
-                        components->keyboard_input_components[player_entity_id].movement_direction.up = true;
-                        break;
-                    case SDLK_S:
-                        components->keyboard_input_components[player_entity_id].movement_direction.down = true;
-                        break;
-                    case SDLK_A:
-                        components->keyboard_input_components[player_entity_id].movement_direction.left = true;
-
-                        break;
-                    case SDLK_D:
-                        components->keyboard_input_components[player_entity_id].movement_direction.right = true;
-                        break;
-
-                    case SDLK_ESCAPE:
-                        is_game_running = false;
-                        break;
-                    }
-                }
-            }
             break;
 
         case SDL_EVENT_KEY_UP:
-            if (event.key.repeat == 0)
-            {
-
-                if (does_entity_have_component(player_entity_id, KEYBOARD_INPUT_COMPONENT_SIGNATURE))
-                {
-                    switch (event.key.key)
-                    {
-                    case SDLK_W:
-                        components->keyboard_input_components[player_entity_id].movement_direction.up = false;
-                        break;
-                    case SDLK_S:
-                        components->keyboard_input_components[player_entity_id].movement_direction.down = false;
-                        break;
-                    case SDLK_A:
-                        components->keyboard_input_components[player_entity_id].movement_direction.left = false;
-                        break;
-                    case SDLK_D:
-                        components->keyboard_input_components[player_entity_id].movement_direction.right = false;
-
-                        break;
-                    }
-                }
-            }
             break;
         }
     }
@@ -117,20 +67,20 @@ void process_input(ComponentLists *components)
 
 void setup()
 {
-    player_entity_id = ENTITIES;
     uint32_t texture_id_of_player = load_image_as_texture("assets/test-sprite.png", renderer);
-    playerTexture = get_texture_by_texture_id(texture_id_of_player);
+    SDL_Texture *playerTexture = get_texture_by_texture_id(texture_id_of_player);
 
-    create_entity(50, 50, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 64, &components);
-    add_keyboard_input_component_to_components(player_entity_id, &components);
-    add_animation_component_to_entity(player_entity_id, 32);
+    int player_entity_id = create_entity(50, 50, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 64);
+    add_keyboard_input_component_to_components(player_entity_id);
+    add_animation_component_to_entity(player_entity_id);
 
     last_frame_time = SDL_GetTicks();
 }
 void update(float deltaTime)
 {
-    for (int i = 0; i < components.total_position_components; ++i)
+    for (int i = 0; i < components->total_position_components; ++i)
     {
+        // TODO Fix function to not require entity_id stored in the component
         if (does_entity_have_component(components.position_components[i].entity_id, POSITION_COMPONENT_SIGNATURE))
         {
             update_position_system(&components.position_components[i], &components.keyboard_input_components[i], &components, deltaTime);
@@ -138,29 +88,6 @@ void update(float deltaTime)
 
         if (does_entity_have_component(components.animation_components[i].entity_id, AnimationComponentSignature))
         {
-            if (does_entity_have_component(components.animation_components[i].entity_id, KeyboardInputComponentSignature))
-            {
-                if (components.keyboard_input_components[i].movement_direction.up)
-                {
-                    components.animation_components[i].active_animation = MOVE_UP;
-                }
-                else if (components.keyboard_input_components[i].movement_direction.down)
-                {
-                    components.animation_components[i].active_animation = MOVE_DOWN;
-                }
-                else if (components.keyboard_input_components[i].movement_direction.left)
-                {
-                    components.animation_components[i].active_animation = MOVE_LEFT;
-                }
-                else if (components.keyboard_input_components[i].movement_direction.right)
-                {
-                    components.animation_components[i].active_animation = MOVE_RIGHT;
-                }
-                else
-                {
-                    components.animation_components[i].active_animation = NONE;
-                }
-            }
             update_animation_system(&components.animation_components[i], &components.sprite_components[i], renderer, deltaTime);
         }
     }
@@ -168,15 +95,15 @@ void update(float deltaTime)
 
 void render()
 {
-
+    // TODO Fix function to not require entity_id stored in the component
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
-    for (int i = 0; i < components.total_sprite_components; ++i)
+    for (int i = 0; i < components->total_sprite_components; ++i)
     {
-        if (does_entity_have_component(components.sprite_components[i].entity_id, SPRITE_COMPONENT_SIGNATURE))
+        if (does_entity_have_component(components->sprite_components[i].entity_id, SPRITE_COMPONENT_SIGNATURE))
         {
-            update_render_system(&components.sprite_components[i], &components.position_components[i], &components, renderer);
+            update_render_system(components->sprite_components[i], components.position_components[i], &components, renderer);
         }
     }
 
@@ -192,6 +119,12 @@ void destroy_window()
 int main()
 {
     is_game_running = initialize_sdl();
+
+    if (!initialize_sdl())
+    {
+        printf("Couldn't initialize sdl\n");
+        return 1;
+    }
 
     setup();
 

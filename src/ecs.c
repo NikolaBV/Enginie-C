@@ -1,31 +1,30 @@
 #include "../lib/ecs.h"
 
-int player_entity_id = 0;
 int ENTITIES = 0;
 int signatures[100];
 SDL_Texture *textures[100];
 uint32_t textures_count = 0;
-ComponentLists components;
+ComponentLists *components;
 
-void create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components)
+int create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height)
 {
     int id = ENTITIES++;
 
-    add_position_component_to_components(id, x, y, components);
-    add_sprite_component_to_components(id, texture_id, texture_width, texture_height, sprite_width, sprite_height, components);
+    add_position_component_to_components(id, x, y);
+    add_sprite_component_to_components(id, texture_id, texture_width, texture_height, sprite_width, sprite_height);
+
+    return id;
 }
 
-void add_position_component_to_components(int entity_id, float x, float y, ComponentLists *components)
+void add_position_component_to_components(int entity_id, float x, float y)
 {
-    components->position_components[entity_id].entity_id = entity_id;
     components->position_components[entity_id].x = x;
     components->position_components[entity_id].y = y;
     add_component_signature_to_entity(entity_id, POSITION_COMPONENT_SIGNATURE);
     components->total_position_components++;
 }
-void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components)
+void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height)
 {
-    components->sprite_components[entity_id].entity_id = entity_id;
     components->sprite_components[entity_id].sprite_height = sprite_height;
     components->sprite_components[entity_id].sprite_width = sprite_width;
 
@@ -37,24 +36,21 @@ void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint
     components->total_sprite_components++;
 }
 
-void add_animation_component_to_entity(int entity_id, float frame_width)
+void add_animation_component_to_entity(int entity_id)
 {
-    components.animation_components[entity_id].entity_id = entity_id;
-    components.animation_components[entity_id].frame_width = frame_width;
-    components.animation_components[entity_id].active_animation = NONE;
-    components.animation_components[entity_id].frame_index = 0;
-    components.animation_components[entity_id].animation_time = 0;
-    components.animation_components[entity_id].animation_period = 0.1f;
+    components->animation_components[entity_id].active_animation = IDLE;
+    components->animation_components[entity_id].frame_index = 0;
+    components->animation_components[entity_id].animation_time = 0;
+    components->animation_components[entity_id].animation_period = 0.1f;
     add_component_signature_to_entity(entity_id, AnimationComponentSignature);
 }
 
-void add_keyboard_input_component_to_components(int entity_id, ComponentLists *components)
+void add_keyboard_input_component_to_components(int entity_id)
 {
-    components->keyboard_input_components[entity_id].entity_id = entity_id;
     add_component_signature_to_entity(entity_id, KEYBOARD_INPUT_COMPONENT_SIGNATURE);
 }
 
-void update_position_system(PositionComponent *position, KeyboardInputComponent *keyboardInput, ComponentLists *components, float deltaTime)
+void update_position_system(PositionComponent *position, KeyboardInputComponent *keyboardInput, float deltaTime)
 {
     if (keyboardInput->movement_direction.up)
     {
@@ -73,8 +69,9 @@ void update_position_system(PositionComponent *position, KeyboardInputComponent 
         position->x -= MOVEMENT_SPEED_IN_PIXELS * deltaTime;
     }
 }
-void update_render_system(SpriteComponent *sprite, PositionComponent *position, ComponentLists *components, SDL_Renderer *renderer)
+void update_render_system(SpriteComponent *sprite, PositionComponent *position, SDL_Renderer *renderer)
 {
+    // TODO Fix function to not require entity_id stored in the component
     SDL_Texture *entity_texture = get_texture_by_texture_id(sprite->texture_id);
     float srcRect_x_position = 0;
 
@@ -96,15 +93,13 @@ SDL_Texture *get_texture_by_texture_id(uint32_t texture_id)
 
 void update_animation_system(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer, float deltaTime)
 {
-    if (animation->active_animation != NONE)
-    {
-        animation->animation_time += deltaTime;
+    animation->animation_time += deltaTime;
+    int frame_size = (sprite->texture_width / sprite->sprite_width);
 
-        if (animation->animation_time > animation->animation_period)
-        {
-            animation->frame_index = (animation->frame_index + 1) % 4;
-            animation->animation_time = 0.f;
-        }
+    if (animation->animation_time > animation->animation_period)
+    {
+        animation->frame_index = (animation->frame_index + 1) % frame_size;
+        animation->animation_time -= animation->animation_period;
     }
 }
 
@@ -124,10 +119,23 @@ uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer)
     if (image == NULL)
     {
         fprintf(stderr, "Couldn't load image: %s\n", SDL_GetError());
+        return UINT32_MAX;
     }
 
+    if (image == NULL)
+    {
+        fprintf(stderr, "Couldn't load image: %s\n", SDL_GetError());
+        return UINT32_MAX;
+    }
+
+    if (textures_count >= 100)
+    {
+        fprintf(stderr, "Texture array is maxxed out\n");
+        return UINT32_MAX;
+    }
     SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, image);
     uint32_t id = textures_count++;
     textures[id] = newTexture;
+    SDL_DestroySurface(image);
     return id;
 }

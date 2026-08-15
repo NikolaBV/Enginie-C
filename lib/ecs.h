@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -13,15 +15,13 @@
 
 typedef enum
 {
+    IDLE,
     MOVE_UP,
     MOVE_DOWN,
     MOVE_LEFT,
     MOVE_RIGHT,
-    IDLE,
-    NONE
 } AnimationName;
 
-extern int player_entity_id;
 extern int ENTITIES;
 extern int signatures[100];
 extern SDL_Texture *textures[100];
@@ -35,11 +35,18 @@ typedef enum
     AnimationComponentSignature = ANIMATION_COMPONENT_SIGNATURE
 } ComponentSignatures;
 
+typedef struct
+{
+    int row;              /* which row of the sheet this clip lives on */
+    int frame_count;      /* how many frames THIS clip has */
+    float frame_duration; /* seconds per frame, per clip */
+    bool looping;
+} AnimationClip;
+
 typedef struct AnimationComponent
 {
-    int entity_id;
+    const AnimationClip *clips;
     int frame_index;
-    float frame_width;
     float animation_period;
     float animation_time;
     AnimationName active_animation;
@@ -56,20 +63,18 @@ typedef struct
 typedef struct
 {
     Movement_Direction movement_direction;
-    int entity_id;
 
 } KeyboardInputComponent;
 
 typedef struct
 {
-    int entity_id;
     float x;
     float y;
 } PositionComponent;
 
 typedef struct
 {
-    int entity_id;
+    int number_of_sprites_per_row;
 
     uint32_t texture_id;
     uint32_t texture_width;
@@ -77,6 +82,7 @@ typedef struct
 
     uint32_t sprite_width;
     uint32_t sprite_height;
+
 } SpriteComponent;
 
 typedef struct
@@ -92,18 +98,18 @@ typedef struct
     int total_animation_components;
 } ComponentLists;
 
-extern ComponentLists components;
+extern ComponentLists *components;
 
-void create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components);
-void update_position_system(PositionComponent *position, KeyboardInputComponent *keyboardInput, ComponentLists *components, float deltaTime);
-void update_render_system(SpriteComponent *sprite, PositionComponent *position, ComponentLists *components, SDL_Renderer *renderer);
+int create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height);
+void update_position_system(PositionComponent *position, KeyboardInputComponent *keyboardInput, float deltaTime);
+void update_render_system(SpriteComponent *sprite, PositionComponent *position, SDL_Renderer *renderer);
+void update_animation_system(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer, float deltaTime);
 void add_component_signature_to_entity(int entity_id, ComponentSignatures componentSignature);
 
-void add_position_component_to_components(int entity_id, float x, float y, ComponentLists *components);
-void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, ComponentLists *components);
-void add_keyboard_input_component_to_components(int entity_id, ComponentLists *components);
-void add_animation_component_to_entity(int entity_id, float frame_width);
-void update_animation_system(AnimationComponent *animation, SpriteComponent *sprite, SDL_Renderer *renderer, float deltaTime);
+void add_position_component_to_components(int entity_id, float x, float y);
+void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height);
+void add_keyboard_input_component_to_components(int entity_id);
+void add_animation_component_to_entity(int entity_id);
 
 uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer);
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id);
