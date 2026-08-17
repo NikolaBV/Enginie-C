@@ -6,16 +6,12 @@ int signatures[100];
 static ComponentLists world_storage;
 ComponentLists *components = &world_storage;
 
-SDL_Texture *textures[100];
+SDL_Texture *textures[MAX_TEXTURES_COUNT];
 uint32_t textures_count = 0;
 
-int create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale)
+int create_entity()
 {
     int id = ENTITIES++;
-
-    add_position_component_to_components(id, x, y);
-    add_sprite_component_to_components(id, texture_id, texture_width, texture_height, sprite_width, sprite_height, scale);
-
     return id;
 }
 
@@ -72,7 +68,6 @@ void update_position_system(int entity_id, float deltaTime)
 }
 void update_render_system(int entity_id, SDL_Renderer *renderer)
 {
-    // TODO Fix function to not require entity_id stored in the component
     SpriteComponent *sprite = &components->sprite_components[entity_id];
     PositionComponent *position = &components->position_components[entity_id];
     SDL_Texture *entity_texture = get_texture_by_texture_id(sprite->texture_id);
@@ -141,18 +136,19 @@ uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer)
         return UINT32_MAX;
     }
 
-    if (image == NULL)
-    {
-        fprintf(stderr, "Couldn't load image: %s\n", SDL_GetError());
-        return UINT32_MAX;
-    }
-
-    if (textures_count >= 100)
+    if (textures_count >= MAX_TEXTURES_COUNT)
     {
         fprintf(stderr, "Texture array is maxxed out\n");
         return UINT32_MAX;
     }
     SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, image);
+
+    if (newTexture == NULL)
+    {
+        fprintf(stderr, "Couldn't create texture from surface: %s\n", SDL_GetError());
+        return UINT32_MAX;
+    }
+
     uint32_t id = textures_count++;
     textures[id] = newTexture;
     SDL_DestroySurface(image);

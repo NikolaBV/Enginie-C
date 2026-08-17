@@ -16,6 +16,13 @@ Uint64 last_frame_time = 0;
 const float FIXED_DT = 1.0f / 60.0f;
 float accumulator = 0.0f;
 
+int main(void);
+int setup(void);
+
+void destroy_window(void);
+void update(float deltaTime);
+void render(void);
+
 int initialize_sdl(void)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -44,7 +51,7 @@ int initialize_sdl(void)
     return TRUE;
 }
 
-void process_input()
+void process_input(void)
 {
     SDL_Event event;
 
@@ -80,7 +87,10 @@ int setup()
         return 1;
     }
 
-    int player_entity_id = create_entity(100, 100, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 32, 2);
+    int player_entity_id = create_entity();
+
+    add_position_component_to_components(player_entity_id, 100, 100);
+    add_sprite_component_to_components(player_entity_id, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 32, 2);
     add_keyboard_input_component_to_components(player_entity_id);
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 50);
@@ -93,7 +103,6 @@ void update(float deltaTime)
 {
     for (int entity_id_index = 0; entity_id_index < components->total_position_components; ++entity_id_index)
     {
-        // TODO Fix function to not require entity_id stored in the component
         if (does_entity_have_component(entity_id_index, POSITION_COMPONENT_SIGNATURE))
         {
             update_position_system(entity_id_index, deltaTime);
@@ -112,7 +121,6 @@ void update(float deltaTime)
 
 void render()
 {
-    // TODO Fix function to not require entity_id stored in the component
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 

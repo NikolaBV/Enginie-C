@@ -102,7 +102,7 @@ typedef struct
 
 extern ComponentLists *components;
 
-int create_entity(float x, float y, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale);
+int create_entity(void);
 
 void update_position_system(int entity_id, float deltaTime);
 void update_render_system(int entity_id, SDL_Renderer *renderer);

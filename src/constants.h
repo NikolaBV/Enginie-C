@@ -3,3 +3,4 @@
 #define FALSE 0
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define MAX_TEXTURES_COUNT 100
