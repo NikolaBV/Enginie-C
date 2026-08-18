@@ -9,13 +9,18 @@ ComponentLists *components = &world_storage;
 SDL_Texture *textures[MAX_TEXTURES_COUNT];
 uint32_t textures_count = 0;
 
+static const AnimationClip player_clips[] = {
+    {0, 4, 0.15f, true}, // idle
+    {1, 6, 0.08f, true}, // walk
+};
+
 int create_entity()
 {
     int id = ENTITIES++;
     return id;
 }
 
-void add_position_component_to_components(int entity_id, float x, float y)
+void add_position_component_to_entity(int entity_id, float x, float y)
 {
     components->position_components[entity_id].x = x;
     components->position_components[entity_id].y = y;
@@ -23,7 +28,7 @@ void add_position_component_to_components(int entity_id, float x, float y)
     add_component_signature_to_entity(entity_id, POSITION_COMPONENT_SIGNATURE);
     components->total_position_components++;
 }
-void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale)
+void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale)
 {
     components->sprite_components[entity_id].sprite_height = sprite_height;
     components->sprite_components[entity_id].sprite_width = sprite_width;
@@ -40,13 +45,26 @@ void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint
 
 void add_animation_component_to_entity(int entity_id)
 {
+    components->animation_components[entity_id].clips = player_clips;
+    components->animation_components[entity_id].active_clip = 0;
     components->animation_components[entity_id].frame_index = 0;
-    components->animation_components[entity_id].animation_time = 0;
-    components->animation_components[entity_id].animation_period = 0.1f;
+    components->animation_components[entity_id].time_in_frame = 0;
+    components->animation_components[entity_id].finished = false;
+
     add_component_signature_to_entity(entity_id, AnimationComponentSignature);
+
+    components->total_animation_components++;
+}
+void add_facing_component_entity(int entity_id)
+{
+    components->facing_components[entity_id].facing = FACE_SIDE;
+    components->facing_components[entity_id].flip = false;
+    add_component_signature_to_entity(entity_id, FacingComponentSignature);
+
+    components->total_facing_components++;
 }
 
-void add_keyboard_input_component_to_components(int entity_id)
+void add_keyboard_input_component_to_entity(int entity_id)
 {
     add_component_signature_to_entity(entity_id, KeyboardInputComponentSignature);
 }
@@ -56,6 +74,8 @@ void add_velocity_component_to_entity(int entity_id, float speed)
     components->velocity_components[entity_id].y = 1;
     components->velocity_components[entity_id].speed = speed;
     add_component_signature_to_entity(entity_id, VelocityComponentSignature);
+
+    components->total_velocity_components++;
 }
 
 void update_position_system(int entity_id, float deltaTime)
@@ -70,6 +90,8 @@ void update_render_system(int entity_id, SDL_Renderer *renderer)
 {
     SpriteComponent *sprite = &components->sprite_components[entity_id];
     PositionComponent *position = &components->position_components[entity_id];
+    FacingComponent *facing = &components->facing_components[entity_id];
+
     SDL_Texture *entity_texture = get_texture_by_texture_id(sprite->texture_id);
     float srcRect_x_position = 0;
 
@@ -78,7 +100,7 @@ void update_render_system(int entity_id, SDL_Renderer *renderer)
         srcRect_x_position = components->animation_components[entity_id].frame_index * sprite->sprite_width;
     }
 
-    SDL_FRect srcRect = {srcRect_x_position, 0, sprite->sprite_width, sprite->sprite_height};
+    SDL_FRect srcRect = {srcRect_x_position, facing->facing * sprite->sprite_height, sprite->sprite_width, sprite->sprite_height};
     SDL_FRect destRect = {position->x, position->y, sprite->sprite_width * sprite->scale, sprite->sprite_height * sprite->scale};
 
     SDL_RenderTexture(renderer, entity_texture, &srcRect, &destRect);
@@ -96,15 +118,29 @@ void update_input_system(int entity_id)
 void update_animation_system(int entity_id, float deltaTime)
 {
     AnimationComponent *animation = &components->animation_components[entity_id];
-    SpriteComponent *sprite = &components->sprite_components[entity_id];
+    const AnimationClip *animation_clip = &animation->clips[animation->active_clip];
 
-    animation->animation_time += deltaTime;
-    int frame_size = (sprite->texture_width / sprite->sprite_width);
+    if (animation->finished)
+        return;
 
-    if (animation->animation_time > animation->animation_period)
+    animation->time_in_frame += deltaTime;
+    while (animation->time_in_frame >= animation_clip->frame_duration)
     {
-        animation->frame_index = (animation->frame_index + 1) % frame_size;
-        animation->animation_time -= animation->animation_period;
+        animation->time_in_frame -= animation_clip->frame_duration;
+        animation->frame_index++;
+
+        if (animation->frame_index >= animation_clip->frame_count)
+        {
+            if (animation_clip->looping)
+            {
+                animation->frame_index = 0;
+            }
+            else
+            {
+                animation->frame_index = animation_clip->frame_count - 1;
+                animation->finished = true;
+            }
+        }
     }
 }
 

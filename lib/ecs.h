@@ -13,6 +13,7 @@
 #define KEYBOARD_INPUT_COMPONENT_SIGNATURE (1 << 2)
 #define ANIMATION_COMPONENT_SIGNATURE (1 << 3)
 #define VELOCITY_COMPONENT_SIGNATURE (1 << 4)
+#define FACING_COMPONENT_SIGNATURE (1 << 5)
 
 extern int ENTITIES;
 extern int signatures[100];
@@ -25,33 +26,30 @@ typedef enum
     SpriteComponentSignature = SPRITE_COMPONENT_SIGNATURE,
     KeyboardInputComponentSignature = KEYBOARD_INPUT_COMPONENT_SIGNATURE,
     AnimationComponentSignature = ANIMATION_COMPONENT_SIGNATURE,
-    VelocityComponentSignature = VELOCITY_COMPONENT_SIGNATURE
+    VelocityComponentSignature = VELOCITY_COMPONENT_SIGNATURE,
+    FacingComponentSignature = FACING_COMPONENT_SIGNATURE
 
 } ComponentSignatures;
 
 typedef struct
 {
-    int row;              /* which row of the sheet this clip lives on */
-    int frame_count;      /* how many frames THIS clip has */
-    float frame_duration; /* seconds per frame, per clip */
+    int row;
+    int frame_count;
+    float frame_duration;
     bool looping;
 } AnimationClip;
 
-typedef struct AnimationComponent
-{
-    const AnimationClip *clips;
-    int frame_index;
-    float animation_period;
-    float animation_time;
-} AnimationComponent;
+static const AnimationClip player_clips[4];
 
 typedef struct
 {
-    bool up;
-    bool down;
-    bool right;
-    bool left;
-} Movement_Direction;
+    const AnimationClip *clips;
+    int clip_count;
+    int active_clip;
+    int frame_index;
+    float time_in_frame;
+    bool finished;
+} AnimationComponent;
 
 typedef struct
 {
@@ -85,6 +83,19 @@ typedef struct
     float speed;
 } VelocityComponent;
 
+typedef enum
+{
+    FACE_DOWN,
+    FACE_UP,
+    FACE_SIDE
+} Facing;
+
+typedef struct
+{
+    Facing facing;
+    bool flip;
+} FacingComponent;
+
 typedef struct
 {
     PositionComponent position_components[100];
@@ -92,12 +103,14 @@ typedef struct
     KeyboardInputComponent keyboard_input_components[100];
     AnimationComponent animation_components[100];
     VelocityComponent velocity_components[100];
+    FacingComponent facing_components[100];
 
     int total_position_components;
     int total_sprite_components;
     int total_keyboard_input_components;
     int total_animation_components;
     int total_velocity_components;
+    int total_facing_components;
 } ComponentLists;
 
 extern ComponentLists *components;
@@ -111,11 +124,12 @@ void update_input_system(int entity_id);
 
 void add_component_signature_to_entity(int entity_id, ComponentSignatures componentSignature);
 
-void add_position_component_to_components(int entity_id, float x, float y);
-void add_sprite_component_to_components(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale);
-void add_keyboard_input_component_to_components(int entity_id);
+void add_position_component_to_entity(int entity_id, float x, float y);
+void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale);
+void add_keyboard_input_component_to_entity(int entity_id);
 void add_animation_component_to_entity(int entity_id);
 void add_velocity_component_to_entity(int entity_id, float speed);
+void add_facing_component_entity(int entity_id);
 
 uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer);
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id);

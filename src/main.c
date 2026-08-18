@@ -8,7 +8,7 @@
 #include "constants.h"
 #include "../lib/ecs.h"
 
-int is_game_running = FALSE;
+int is_game_running = false;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
@@ -28,7 +28,7 @@ int initialize_sdl(void)
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         fprintf(stderr, "Couldn't initialize SDL: %s", SDL_GetError());
-        return FALSE;
+        return false;
     }
 
     window = SDL_CreateWindow(NULL, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
@@ -36,7 +36,7 @@ int initialize_sdl(void)
     if (!window)
     {
         fprintf(stderr, "Couldn't init window, %s", SDL_GetError());
-        return FALSE;
+        return false;
     }
 
     renderer = SDL_CreateRenderer(window, NULL);
@@ -44,11 +44,11 @@ int initialize_sdl(void)
     if (!renderer)
     {
         fprintf(stderr, "Couldn't create renderer: %s\n", SDL_GetError());
-        return FALSE;
+        return false;
     }
 
     SDL_SetRenderVSync(renderer, 1);
-    return TRUE;
+    return true;
 }
 
 void process_input(void)
@@ -60,12 +60,12 @@ void process_input(void)
         switch (event.type)
         {
         case SDL_EVENT_QUIT:
-            is_game_running = FALSE;
+            is_game_running = false;
             break;
 
         case SDL_EVENT_KEY_DOWN:
             if (!event.key.repeat && event.key.key == SDLK_ESCAPE)
-                is_game_running = FALSE;
+                is_game_running = false;
             break;
         }
     }
@@ -89,11 +89,12 @@ int setup()
 
     int player_entity_id = create_entity();
 
-    add_position_component_to_components(player_entity_id, 100, 100);
-    add_sprite_component_to_components(player_entity_id, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 32, 2);
-    add_keyboard_input_component_to_components(player_entity_id);
+    add_position_component_to_entity(player_entity_id, 100, 100);
+    add_sprite_component_to_entity(player_entity_id, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 32, 3);
+    add_keyboard_input_component_to_entity(player_entity_id);
     add_animation_component_to_entity(player_entity_id);
-    add_velocity_component_to_entity(player_entity_id, 50);
+    add_velocity_component_to_entity(player_entity_id, 150);
+    add_facing_component_entity(player_entity_id);
 
     last_frame_time = SDL_GetTicks();
 
@@ -118,7 +119,6 @@ void update(float deltaTime)
         }
     }
 }
-
 void render()
 {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -147,7 +147,7 @@ int main()
     {
         return 1;
     }
-    is_game_running = TRUE;
+    is_game_running = true;
 
     if (setup() == 1)
     {
