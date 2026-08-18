@@ -1,11 +1,8 @@
-#include <stdio.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_error.h>
 
-#include "constants.h"
 #include "../lib/ecs.h"
 
 int is_game_running = false;
@@ -20,7 +17,7 @@ int main(void);
 int setup(void);
 
 void destroy_window(void);
-void update(float deltaTime);
+void update(float delta_time);
 void render(void);
 
 int initialize_sdl(void)
@@ -90,32 +87,46 @@ int setup()
     int player_entity_id = create_entity();
 
     add_position_component_to_entity(player_entity_id, 100, 100);
-    add_sprite_component_to_entity(player_entity_id, texture_id_of_player, playerTexture->w, playerTexture->h, 32, 32, 3);
+    add_sprite_component_to_entity(player_entity_id, texture_id_of_player, 32, 32, 3);
     add_keyboard_input_component_to_entity(player_entity_id);
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 150);
     add_facing_component_entity(player_entity_id);
 
+    int second_player_entity = create_entity();
+
+    add_position_component_to_entity(second_player_entity, 200, 200);
+    add_sprite_component_to_entity(second_player_entity, texture_id_of_player, 32, 32, 3);
+    add_keyboard_input_component_to_entity(second_player_entity);
+    add_animation_component_to_entity(second_player_entity);
+    add_velocity_component_to_entity(second_player_entity, 150);
+    add_facing_component_entity(second_player_entity);
+
     last_frame_time = SDL_GetTicks();
 
     return 0;
 }
-void update(float deltaTime)
+void update(float delta_time)
 {
-    for (int entity_id_index = 0; entity_id_index < components->total_position_components; ++entity_id_index)
+    for (int entity_id_index = 0; entity_id_index < number_of_entities; ++entity_id_index)
     {
-        if (does_entity_have_component(entity_id_index, POSITION_COMPONENT_SIGNATURE))
-        {
-            update_position_system(entity_id_index, deltaTime);
-        }
-
-        if (does_entity_have_component(entity_id_index, AnimationComponentSignature))
-        {
-            update_animation_system(entity_id_index, deltaTime);
-        }
-        if (does_entity_have_component(entity_id_index, KeyboardInputComponentSignature))
+        if (does_entity_have_component(entity_id_index, Keyboard_Input_Component_Signature))
         {
             update_input_system(entity_id_index);
+        }
+        if (does_entity_have_component(entity_id_index, Position_Component_Signature))
+        {
+            update_position_system(entity_id_index, delta_time);
+        }
+
+        if (does_entity_have_component(entity_id_index, Facing_Component_Signature))
+        {
+            update_facing_system(entity_id_index);
+        }
+
+        if (does_entity_have_component(entity_id_index, Animation_Component_Signature))
+        {
+            update_animation_system(entity_id_index, delta_time);
         }
     }
 }
@@ -124,9 +135,9 @@ void render()
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
-    for (int i = 0; i < components->total_sprite_components; ++i)
+    for (int i = 0; i < number_of_entities; ++i)
     {
-        if (does_entity_have_component(i, SPRITE_COMPONENT_SIGNATURE))
+        if (does_entity_have_component(i, Sprite_Component_Signature))
         {
             update_render_system(i, renderer);
         }

@@ -1,33 +1,24 @@
 
 #pragma once
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "constants.h"
 #include <SDL3/SDL_render.h>
 #include <SDL3_image/SDL_image.h>
-#include "../src/constants.h"
+#include <stdio.h>
+#include <math.h>
 
-#define POSITION_COMPONENT_SIGNATURE (1 << 0)
-#define SPRITE_COMPONENT_SIGNATURE (1 << 1)
-#define KEYBOARD_INPUT_COMPONENT_SIGNATURE (1 << 2)
-#define ANIMATION_COMPONENT_SIGNATURE (1 << 3)
-#define VELOCITY_COMPONENT_SIGNATURE (1 << 4)
-#define FACING_COMPONENT_SIGNATURE (1 << 5)
-
-extern int ENTITIES;
-extern int signatures[100];
-extern SDL_Texture *textures[100];
+extern int number_of_entities;
+extern int signatures[MAX_COMPONENTS_SIGNATURES];
+extern SDL_Texture *textures[MAX_TEXTURES_COUNT];
 extern uint32_t textures_count;
 
 typedef enum
 {
-    PositionComponentSignature = POSITION_COMPONENT_SIGNATURE,
-    SpriteComponentSignature = SPRITE_COMPONENT_SIGNATURE,
-    KeyboardInputComponentSignature = KEYBOARD_INPUT_COMPONENT_SIGNATURE,
-    AnimationComponentSignature = ANIMATION_COMPONENT_SIGNATURE,
-    VelocityComponentSignature = VELOCITY_COMPONENT_SIGNATURE,
-    FacingComponentSignature = FACING_COMPONENT_SIGNATURE
+    Position_Component_Signature = (1 << 0),
+    Sprite_Component_Signature = (1 << 1),
+    Keyboard_Input_Component_Signature = (1 << 2),
+    Animation_Component_Signature = (1 << 3),
+    Velocity_Component_Signature = (1 << 4),
+    Facing_Component_Signature = (1 << 5)
 
 } ComponentSignatures;
 
@@ -64,13 +55,9 @@ typedef struct
 
 typedef struct
 {
-    int number_of_sprites_per_row;
     int scale;
 
     uint32_t texture_id;
-    uint32_t texture_width;
-    uint32_t texture_height;
-
     uint32_t sprite_width;
     uint32_t sprite_height;
 
@@ -98,34 +85,28 @@ typedef struct
 
 typedef struct
 {
-    PositionComponent position_components[100];
-    SpriteComponent sprite_components[100];
-    KeyboardInputComponent keyboard_input_components[100];
-    AnimationComponent animation_components[100];
-    VelocityComponent velocity_components[100];
-    FacingComponent facing_components[100];
-
-    int total_position_components;
-    int total_sprite_components;
-    int total_keyboard_input_components;
-    int total_animation_components;
-    int total_velocity_components;
-    int total_facing_components;
+    PositionComponent position_components[MAX_ENTITIES];
+    SpriteComponent sprite_components[MAX_ENTITIES];
+    KeyboardInputComponent keyboard_input_components[MAX_ENTITIES];
+    AnimationComponent animation_components[MAX_ENTITIES];
+    VelocityComponent velocity_components[MAX_ENTITIES];
+    FacingComponent facing_components[MAX_ENTITIES];
 } ComponentLists;
 
 extern ComponentLists *components;
 
 int create_entity(void);
 
-void update_position_system(int entity_id, float deltaTime);
+void update_position_system(int entity_id, float delta_time);
 void update_render_system(int entity_id, SDL_Renderer *renderer);
-void update_animation_system(int entity_id, float deltaTime);
+void update_animation_system(int entity_id, float delta_time);
 void update_input_system(int entity_id);
+void update_facing_system(int entity_id);
 
 void add_component_signature_to_entity(int entity_id, ComponentSignatures componentSignature);
 
 void add_position_component_to_entity(int entity_id, float x, float y);
-void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t texture_width, uint32_t texture_height, uint32_t sprite_width, uint32_t sprite_height, int scale);
+void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t sprite_width, uint32_t sprite_height, int scale);
 void add_keyboard_input_component_to_entity(int entity_id);
 void add_animation_component_to_entity(int entity_id);
 void add_velocity_component_to_entity(int entity_id, float speed);
