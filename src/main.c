@@ -88,7 +88,8 @@ int setup()
 
     add_position_component_to_entity(player_entity_id, 100, 100);
     add_sprite_component_to_entity(player_entity_id, texture_id_of_player, 32, 32, 3);
-    add_keyboard_input_component_to_entity(player_entity_id);
+
+    add_keyboard_input_component_to_entity(player_entity_id, wasd_layout);
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 150);
     add_facing_component_entity(player_entity_id);
@@ -97,7 +98,7 @@ int setup()
 
     add_position_component_to_entity(second_player_entity, 200, 200);
     add_sprite_component_to_entity(second_player_entity, texture_id_of_player, 32, 32, 3);
-    add_keyboard_input_component_to_entity(second_player_entity);
+    add_keyboard_input_component_to_entity(second_player_entity, arrows_layout);
     add_animation_component_to_entity(second_player_entity);
     add_velocity_component_to_entity(second_player_entity, 150);
     add_facing_component_entity(second_player_entity);

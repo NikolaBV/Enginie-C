@@ -44,7 +44,15 @@ typedef struct
 
 typedef struct
 {
+    SDL_Scancode Up;
+    SDL_Scancode Down;
+    SDL_Scancode Left;
+    SDL_Scancode Right;
+} Movement_Direction_Keys;
 
+typedef struct
+{
+    Movement_Direction_Keys movement_direction_keys;
 } KeyboardInputComponent;
 
 typedef struct
@@ -95,6 +103,9 @@ typedef struct
 
 extern ComponentLists *components;
 
+extern Movement_Direction_Keys wasd_layout;
+extern Movement_Direction_Keys arrows_layout;
+
 int create_entity(void);
 
 void update_position_system(int entity_id, float delta_time);
@@ -107,7 +118,7 @@ void add_component_signature_to_entity(int entity_id, ComponentSignatures compon
 
 void add_position_component_to_entity(int entity_id, float x, float y);
 void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t sprite_width, uint32_t sprite_height, int scale);
-void add_keyboard_input_component_to_entity(int entity_id);
+void add_keyboard_input_component_to_entity(int entity_id, Movement_Direction_Keys movement_direction_keys);
 void add_animation_component_to_entity(int entity_id);
 void add_velocity_component_to_entity(int entity_id, float speed);
 void add_facing_component_entity(int entity_id);

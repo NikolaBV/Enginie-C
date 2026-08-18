@@ -9,6 +9,21 @@ ComponentLists *components = &world_storage;
 SDL_Texture *textures[MAX_TEXTURES_COUNT];
 uint32_t textures_count = 0;
 
+Movement_Direction_Keys wasd_layout = {
+    SDL_SCANCODE_W,
+    SDL_SCANCODE_S,
+    SDL_SCANCODE_A,
+    SDL_SCANCODE_D,
+
+};
+Movement_Direction_Keys arrows_layout = {
+    SDL_SCANCODE_UP,
+    SDL_SCANCODE_DOWN,
+    SDL_SCANCODE_LEFT,
+    SDL_SCANCODE_RIGHT,
+
+};
+
 static const AnimationClip player_clips[] = {
     {0, 4, 0.15f, true}, // idle
     {1, 6, 0.08f, true}, // walk
@@ -54,8 +69,13 @@ void add_facing_component_entity(int entity_id)
     add_component_signature_to_entity(entity_id, Facing_Component_Signature);
 }
 
-void add_keyboard_input_component_to_entity(int entity_id)
+void add_keyboard_input_component_to_entity(int entity_id, Movement_Direction_Keys movement_direction_keys)
 {
+    components->keyboard_input_components[entity_id].movement_direction_keys.Up = movement_direction_keys.Up;
+    components->keyboard_input_components[entity_id].movement_direction_keys.Down = movement_direction_keys.Down;
+    components->keyboard_input_components[entity_id].movement_direction_keys.Left = movement_direction_keys.Left;
+    components->keyboard_input_components[entity_id].movement_direction_keys.Right = movement_direction_keys.Right;
+
     add_component_signature_to_entity(entity_id, Keyboard_Input_Component_Signature);
 }
 void add_velocity_component_to_entity(int entity_id, float speed)
@@ -97,11 +117,12 @@ void update_render_system(int entity_id, SDL_Renderer *renderer)
 void update_input_system(int entity_id)
 {
     VelocityComponent *velocity = &components->velocity_components[entity_id];
+    KeyboardInputComponent *keyboard_input = &components->keyboard_input_components[entity_id];
 
     const bool *keys = SDL_GetKeyboardState(NULL);
 
-    float direction_x = (keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]);
-    float direction_y = (keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]);
+    float direction_x = (keys[keyboard_input->movement_direction_keys.Right] - keys[keyboard_input->movement_direction_keys.Left]);
+    float direction_y = (keys[keyboard_input->movement_direction_keys.Down] - keys[keyboard_input->movement_direction_keys.Up]);
 
     float length_of_movement_vector = sqrtf(direction_x * direction_x + direction_y * direction_y);
     if (length_of_movement_vector > 0.0001f)
