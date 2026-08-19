@@ -47,6 +47,12 @@ void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t
     components->sprite_components[entity_id].sprite_height = sprite_height;
     components->sprite_components[entity_id].sprite_width = sprite_width;
     components->sprite_components[entity_id].texture_id = texture_id;
+
+    // default the scaler to a value that keeps the sprite unchanged if a number 0 or under is passed
+    if (scale <= 0)
+    {
+        scale = 1;
+    }
     components->sprite_components[entity_id].scale = scale;
 
     add_component_signature_to_entity(entity_id, Sprite_Component_Signature);
@@ -111,6 +117,7 @@ void update_render_system(int entity_id, SDL_Renderer *renderer)
     SDL_FRect srcRect = {srcRect_x_position, facing->facing * sprite->sprite_height, sprite->sprite_width, sprite->sprite_height};
     SDL_FRect destRect = {position->x, position->y, sprite->sprite_width * sprite->scale, sprite->sprite_height * sprite->scale};
 
+    SDL_SetTextureScaleMode(entity_texture, SDL_SCALEMODE_NEAREST); // makes scaled sprites render not blurred out
     SDL_RenderTextureRotated(renderer, entity_texture, &srcRect, &destRect, 0.0, NULL, facing->flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 

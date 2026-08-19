@@ -76,6 +76,22 @@ int setup()
         fprintf(stderr, "Couldn't load texture of player entity \n");
         return 1;
     }
+
+    uint32_t texture_id_of_tree = load_image_as_texture("assets/Plants.png", renderer);
+    if (texture_id_of_player == UINT32_MAX)
+    {
+        fprintf(stderr, "Couldn't load texture of player entity \n");
+        return 1;
+    }
+
+    SDL_Texture *tree_texture = get_texture_by_texture_id(texture_id_of_tree);
+
+    if (tree_texture == NULL)
+    {
+        fprintf(stderr, "Couldn't load texture of player entity \n");
+        return 1;
+    }
+
     SDL_Texture *playerTexture = get_texture_by_texture_id(texture_id_of_player);
 
     if (playerTexture == NULL)
@@ -88,7 +104,6 @@ int setup()
 
     add_position_component_to_entity(player_entity_id, 100, 100);
     add_sprite_component_to_entity(player_entity_id, texture_id_of_player, 32, 32, 3);
-
     add_keyboard_input_component_to_entity(player_entity_id, wasd_layout);
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 150);
@@ -102,6 +117,10 @@ int setup()
     add_animation_component_to_entity(second_player_entity);
     add_velocity_component_to_entity(second_player_entity, 150);
     add_facing_component_entity(second_player_entity);
+
+    int tree_entity = create_entity();
+    add_position_component_to_entity(tree_entity, 300, 300);
+    add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 64, 3);
 
     last_frame_time = SDL_GetTicks();
 
