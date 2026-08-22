@@ -212,12 +212,14 @@ uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer)
     if (image == NULL)
     {
         fprintf(stderr, "Couldn't load image: %s\n", SDL_GetError());
+        SDL_DestroySurface(image);
         return UINT32_MAX;
     }
 
     if (textures_count >= MAX_TEXTURES_COUNT)
     {
         fprintf(stderr, "Texture array is maxxed out\n");
+        SDL_DestroySurface(image);
         return UINT32_MAX;
     }
     SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, image);
@@ -225,6 +227,8 @@ uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer)
     if (newTexture == NULL)
     {
         fprintf(stderr, "Couldn't create texture from surface: %s\n", SDL_GetError());
+        SDL_DestroyTexture(newTexture);
+        SDL_DestroySurface(image);
         return UINT32_MAX;
     }
 
