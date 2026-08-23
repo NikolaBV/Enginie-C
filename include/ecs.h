@@ -2,14 +2,13 @@
 #pragma once
 #include "constants.h"
 #include <SDL3/SDL_render.h>
-#include <SDL3_image/SDL_image.h>
-#include <stdio.h>
-#include <math.h>
 
 extern int number_of_entities;
-extern int signatures[MAX_COMPONENTS_SIGNATURES];
+extern int signatures[MAX_ENTITIES];
 extern SDL_Texture *textures[MAX_TEXTURES_COUNT];
 extern uint32_t textures_count;
+
+extern const int player_clip_count;
 
 typedef enum
 {
@@ -22,15 +21,28 @@ typedef enum
 
 } ComponentSignatures;
 
+typedef enum
+{
+    CLIP_IDLE,
+    CLIP_WALK
+} Clip_Type;
+
+typedef enum
+{
+    PLANTS
+} Assets_Paths;
+
 typedef struct
 {
-    int row;
+    uint32_t texture_id;
     int frame_count;
     float frame_duration;
     bool looping;
 } AnimationClip;
 
-static const AnimationClip player_clips[4];
+extern const char *assets_paths[];
+
+extern AnimationClip player_clips[];
 
 typedef struct
 {
@@ -44,10 +56,10 @@ typedef struct
 
 typedef struct
 {
-    SDL_Scancode Up;
-    SDL_Scancode Down;
-    SDL_Scancode Left;
-    SDL_Scancode Right;
+    SDL_Scancode up;
+    SDL_Scancode down;
+    SDL_Scancode left;
+    SDL_Scancode right;
 } Movement_Direction_Keys;
 
 typedef struct
@@ -113,16 +125,21 @@ void update_render_system(int entity_id, SDL_Renderer *renderer);
 void update_animation_system(int entity_id, float delta_time);
 void update_input_system(int entity_id);
 void update_facing_system(int entity_id);
+void update_animation_selection_system(int entity_id);
 
-void add_component_signature_to_entity(int entity_id, ComponentSignatures componentSignature);
+void animation_play(AnimationComponent *animation, int clip);
+bool load_player_clips(SDL_Renderer *renderer);
+
+void add_component_signature_to_entity(int entity_id, ComponentSignatures component_signature);
 
 void add_position_component_to_entity(int entity_id, float x, float y);
 void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t sprite_width, uint32_t sprite_height, int scale);
 void add_keyboard_input_component_to_entity(int entity_id, Movement_Direction_Keys movement_direction_keys);
 void add_animation_component_to_entity(int entity_id);
 void add_velocity_component_to_entity(int entity_id, float speed);
-void add_facing_component_entity(int entity_id);
+void add_facing_component_to_entity(int entity_id);
 
-uint32_t load_image_as_texture(char *path_to_image, SDL_Renderer *renderer);
+uint32_t load_image_as_texture(const char *path_to_image, SDL_Renderer *renderer);
+uint32_t load_texture_or_fail(const char *path, SDL_Renderer *renderer);
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id);
-bool does_entity_have_component(int entity_id, ComponentSignatures componentSignature);
+bool does_entity_have_component(int entity_id, ComponentSignatures component_signature);

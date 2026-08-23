@@ -1,0 +1,6 @@
+# The GL driver and fontconfig allocate caches at startup and deliberately never
+# free them -- the process is about to exit and the OS reclaims everything anyway.
+# "Unreachable at exit" is not the same as "a bug". Suppressed so that real leaks
+# stay visible: a diagnostic channel only works while it is empty. See handbook 7E7.
+leak:libfontconfig
+leak:nvidia

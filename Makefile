@@ -1,9 +1,23 @@
-CFLAGS = -Wstrict-prototypes -Wextra -Wshadow -Wunused-parameter -fsanitize=address,undefined -Wall -g -O0 -std=c99 $(shell pkg-config --cflags sdl3 sdl3-image)
-LDLIBS = $(shell pkg-config --libs sdl3 sdl3-image) -lm
+CC  = gcc
+OUT = out/game
+SRC = ./src/*.c
+
+WARNINGS = -Wall -Wextra -Wshadow -Wstrict-prototypes -Wunused-parameter \
+           -pedantic -Wold-style-definition
+CFLAGS   = -Iinclude -std=c99 -g -O0 $(WARNINGS) -fsanitize=address,undefined \
+           $(shell pkg-config --cflags sdl3 sdl3-image)
+LDLIBS   = $(shell pkg-config --libs sdl3 sdl3-image) -lm
+
+.PHONY: all build run clean
+
+all: build
 
 build:
-	gcc $(CFLAGS) ./src/*.c -o ./out/game $(LDLIBS)
-run:
-	LSAN_OPTIONS=suppressions=lsan.supp:exitcode=0 ./out/game
+	mkdir -p $(dir $(OUT))
+	$(CC) $(CFLAGS) $(SRC) -o $(OUT) $(LDLIBS)
+
+run: build
+	LSAN_OPTIONS=suppressions=lsan.supp:exitcode=0 ./$(OUT)
+
 clean:
-	rm ./out/game
+	rm -rf out

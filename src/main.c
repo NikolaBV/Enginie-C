@@ -3,7 +3,9 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_error.h>
 
-#include "../lib/ecs.h"
+#include <stdio.h>
+
+#include "ecs.h"
 
 int is_game_running = false;
 SDL_Window *window = NULL;
@@ -68,59 +70,43 @@ void process_input(void)
     }
 }
 
-int setup()
+int setup(void)
 {
-    uint32_t texture_id_of_player = load_image_as_texture("assets/idle.png", renderer);
-    if (texture_id_of_player == UINT32_MAX)
-    {
-        fprintf(stderr, "Couldn't load texture of player entity \n");
+    if (!load_player_clips(renderer))
         return 1;
-    }
 
-    uint32_t texture_id_of_tree = load_image_as_texture("assets/Plants.png", renderer);
-    if (texture_id_of_player == UINT32_MAX)
-    {
-        fprintf(stderr, "Couldn't load texture of player entity \n");
+    uint32_t texture_id_of_tree = load_texture_or_fail(assets_paths[PLANTS], renderer);
+    if (texture_id_of_tree == UINT32_MAX)
         return 1;
-    }
-
-    SDL_Texture *tree_texture = get_texture_by_texture_id(texture_id_of_tree);
-
-    if (tree_texture == NULL)
-    {
-        fprintf(stderr, "Couldn't load texture of player entity \n");
-        return 1;
-    }
-
-    SDL_Texture *playerTexture = get_texture_by_texture_id(texture_id_of_player);
-
-    if (playerTexture == NULL)
-    {
-        fprintf(stderr, "Couldn't load texture of player entity \n");
-        return 1;
-    }
 
     int player_entity_id = create_entity();
+    if (player_entity_id < 0)
+        return 1;
 
     add_position_component_to_entity(player_entity_id, 100, 100);
-    add_sprite_component_to_entity(player_entity_id, texture_id_of_player, 32, 32, 3);
+    add_sprite_component_to_entity(player_entity_id, player_clips[CLIP_IDLE].texture_id, 32, 32, 3);
     add_keyboard_input_component_to_entity(player_entity_id, wasd_layout);
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 150);
-    add_facing_component_entity(player_entity_id);
+    add_facing_component_to_entity(player_entity_id);
 
-    // int second_player_entity = create_entity();
+    int second_player_entity = create_entity();
+    if (second_player_entity < 0)
+        return 1;
 
-    // add_position_component_to_entity(second_player_entity, 200, 200);
-    // add_sprite_component_to_entity(second_player_entity, texture_id_of_player, 32, 32, 3);
-    // add_keyboard_input_component_to_entity(second_player_entity, arrows_layout);
-    // add_animation_component_to_entity(second_player_entity);
-    // add_velocity_component_to_entity(second_player_entity, 150);
-    // add_facing_component_entity(second_player_entity);
+    add_position_component_to_entity(second_player_entity, 200, 200);
+    add_sprite_component_to_entity(second_player_entity, player_clips[CLIP_IDLE].texture_id, 32, 32, 3);
+    add_keyboard_input_component_to_entity(second_player_entity, arrows_layout);
+    add_animation_component_to_entity(second_player_entity);
+    add_velocity_component_to_entity(second_player_entity, 150);
+    add_facing_component_to_entity(second_player_entity);
 
-    // int tree_entity = create_entity();
-    // add_position_component_to_entity(tree_entity, 300, 300);
-    // add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 64, 3);
+    int tree_entity = create_entity();
+    if (tree_entity < 0)
+        return 1;
+
+    add_position_component_to_entity(tree_entity, 300, 300);
+    add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3);
 
     last_frame_time = SDL_GetTicks();
 
@@ -128,51 +114,36 @@ int setup()
 }
 void update(float delta_time)
 {
-    for (int entity_id_index = 0; entity_id_index < number_of_entities; ++entity_id_index)
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
     {
-        if (does_entity_have_component(entity_id_index, Keyboard_Input_Component_Signature))
-        {
-            update_input_system(entity_id_index);
-        }
-        if (does_entity_have_component(entity_id_index, Position_Component_Signature))
-        {
-            update_position_system(entity_id_index, delta_time);
-        }
 
-        if (does_entity_have_component(entity_id_index, Facing_Component_Signature))
-        {
-            update_facing_system(entity_id_index);
-        }
-
-        if (does_entity_have_component(entity_id_index, Animation_Component_Signature))
-        {
-            update_animation_system(entity_id_index, delta_time);
-        }
+        update_input_system(entity_id);
+        update_animation_selection_system(entity_id);
+        update_position_system(entity_id, delta_time);
+        update_facing_system(entity_id);
+        update_animation_system(entity_id, delta_time);
     }
 }
-void render()
+void render(void)
 {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
-    for (int i = 0; i < number_of_entities; ++i)
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
     {
-        if (does_entity_have_component(i, Sprite_Component_Signature))
-        {
-            update_render_system(i, renderer);
-        }
+        update_render_system(entity_id, renderer);
     }
 
     SDL_RenderPresent(renderer);
 }
-void destroy_window()
+void destroy_window(void)
 {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
-int main()
+int main(void)
 {
     if (!initialize_sdl())
     {
@@ -180,7 +151,7 @@ int main()
     }
     is_game_running = true;
 
-    if (setup() == 1)
+    if (setup() != 0)
     {
         return 1;
     }
@@ -188,13 +159,13 @@ int main()
     while (is_game_running)
     {
         process_input();
-        Uint64 currentTicks = SDL_GetTicks();
-        float frameTime = (currentTicks - last_frame_time) / 1000.0f;
-        last_frame_time = currentTicks;
-        if (frameTime > 0.25f)
-            frameTime = 0.25f;
+        Uint64 current_ticks = SDL_GetTicks();
+        float frame_time = (current_ticks - last_frame_time) / 1000.0f;
+        last_frame_time = current_ticks;
+        if (frame_time > 0.25f)
+            frame_time = 0.25f;
 
-        accumulator += frameTime;
+        accumulator += frame_time;
         while (accumulator >= FIXED_DT)
         {
             update(FIXED_DT);
