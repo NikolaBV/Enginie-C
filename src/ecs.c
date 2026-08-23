@@ -179,13 +179,21 @@ void update_facing_system(int entity_id)
     if (fabsf(velocity->x) < 0.001f && fabsf(velocity->y) < 0.001f)
         return;
 
-    if (fabsf(velocity->x) > fabsf(velocity->y))
+    bool moving_horizontally = fabsf(velocity->x) > fabsf(velocity->y);
+    bool moving_vertically = (fabs(velocity->y) && fabs(velocity->y) != fabs(velocity->x)) ? true : false;
+    bool moving_diagonally_left = (fabsf(velocity->x) == fabs(velocity->y) && (velocity->x < 0)) ? true : false;
+    bool moving_diagonally_right = (fabsf(velocity->x) == fabs(velocity->y) && (velocity->x > 0)) ? true : false;
+
+    if (moving_horizontally || moving_diagonally_left || moving_diagonally_right)
     {
         facing->facing = FACE_SIDE;
         facing->flip = (velocity->x < 0);
     }
-    else
+
+    if (moving_vertically)
+    {
         facing->facing = (velocity->y > 0) ? FACE_DOWN : FACE_UP;
+    }
 }
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id)
 {

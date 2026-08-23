@@ -109,18 +109,18 @@ int setup()
     add_velocity_component_to_entity(player_entity_id, 150);
     add_facing_component_entity(player_entity_id);
 
-    int second_player_entity = create_entity();
+    // int second_player_entity = create_entity();
 
-    add_position_component_to_entity(second_player_entity, 200, 200);
-    add_sprite_component_to_entity(second_player_entity, texture_id_of_player, 32, 32, 3);
-    add_keyboard_input_component_to_entity(second_player_entity, arrows_layout);
-    add_animation_component_to_entity(second_player_entity);
-    add_velocity_component_to_entity(second_player_entity, 150);
-    add_facing_component_entity(second_player_entity);
+    // add_position_component_to_entity(second_player_entity, 200, 200);
+    // add_sprite_component_to_entity(second_player_entity, texture_id_of_player, 32, 32, 3);
+    // add_keyboard_input_component_to_entity(second_player_entity, arrows_layout);
+    // add_animation_component_to_entity(second_player_entity);
+    // add_velocity_component_to_entity(second_player_entity, 150);
+    // add_facing_component_entity(second_player_entity);
 
-    int tree_entity = create_entity();
-    add_position_component_to_entity(tree_entity, 300, 300);
-    add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 64, 3);
+    // int tree_entity = create_entity();
+    // add_position_component_to_entity(tree_entity, 300, 300);
+    // add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 64, 3);
 
     last_frame_time = SDL_GetTicks();
 
