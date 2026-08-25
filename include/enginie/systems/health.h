@@ -1,0 +1,1 @@
+void update_health_system(int entity_id);

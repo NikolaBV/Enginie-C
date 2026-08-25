@@ -14,3 +14,13 @@ And to run:
 ```bash
 make run
 ```
+
+## Project structure
+
+```
+enginie/core/      config, timing
+enginie/platform/  SDL window, input polling, texture cache
+enginie/ecs/       component structs, entity creation, component storage
+enginie/systems/   one file per system (input, movement, facing, animation, render)
+game/              content and setup: entities, sprites, clips, key layouts
+```
