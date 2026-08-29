@@ -16,7 +16,7 @@ bool aabb(float first_entity_x, float first_entity_y, float second_entity_x, flo
     return false;
 }
 
-void update_collision_system(int entity_id)
+void update_collision_system(void)
 {
     // TODO the system is not generic yet, this was build just to test if it works
     PositionComponent *first_entity_position = &components->position_components[entity_id];

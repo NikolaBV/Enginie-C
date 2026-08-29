@@ -87,8 +87,14 @@ typedef struct
 
 typedef struct
 {
-    bool placeholder_property;
+    float offset_x, offset_y; // collider origin, relative to position
+    float width, height;      // collider size in world units
 
+    uint32_t layer; // what I am           (one bit)
+    uint32_t mask;  // what I collide with (many bits)
+
+    bool is_trigger; // report overlap, never push out
+    bool is_static;  // never moved by resolution
 } CollisionComponent;
 
 typedef struct
