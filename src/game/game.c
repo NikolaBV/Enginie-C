@@ -68,7 +68,6 @@ void update(float delta_time)
         update_input_system(entity_id);
         update_animation_selection_system(entity_id);
         update_position_system(entity_id, delta_time);
-        update_collision_system(entity_id);
         update_health_system(entity_id);
         update_facing_system(entity_id);
         update_animation_system(entity_id, delta_time);

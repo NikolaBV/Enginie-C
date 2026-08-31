@@ -95,9 +95,9 @@ void add_velocity_component_to_entity(int entity_id, float speed)
     add_component_signature_to_entity(entity_id, Velocity_Component_Signature);
 }
 
-void add_collision_component_to_entity(int entity_id)
+void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height, uint32_t layer, uint32_t mask, bool is_trigger, bool is_static)
 {
-    components->collision_components[entity_id].placeholder_property = true;
+    //@TODO add the proprties of the collision component
     add_component_signature_to_entity(entity_id, Collision_Component_Signature);
 }
 
