@@ -22,5 +22,5 @@ void add_keyboard_input_component_to_entity(int entity_id, Movement_Direction_Ke
 void add_animation_component_to_entity(int entity_id);
 void add_velocity_component_to_entity(int entity_id, float speed);
 void add_facing_component_to_entity(int entity_id);
-void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height, uint32_t layer, uint32_t mask, bool is_trigger, bool is_static);
 void add_health_component_to_entity(int entity_id, int max_health);
+void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height);

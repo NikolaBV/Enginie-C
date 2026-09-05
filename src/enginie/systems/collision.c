@@ -3,22 +3,54 @@
 #include <enginie/ecs/entity.h>
 #include <stdio.h>
 
-bool aabb(float first_entity_x, float first_entity_y, float second_entity_x, float second_entity_y,
-          int first_entity_width, int first_entity_height, int second_entity_width, int second_entity_height)
+int collision_count = 0;
+CollisionPair collisions[MAX_COLLISIONS];
+
+Bounds collider_bounds(int entity_id)
 {
-    if (first_entity_x < second_entity_x + second_entity_width &&
-        first_entity_x + first_entity_width > second_entity_x &&
-        first_entity_y < second_entity_y + second_entity_height &&
-        first_entity_y + first_entity_height > second_entity_y)
-    {
-        return true;
-    }
-    return false;
+    CollisionComponent *collider = &components->collision_components[entity_id];
+    PositionComponent *position = &components->position_components[entity_id];
+
+    Bounds bounds;
+    bounds.left = position->x + collider->offset_x;
+    bounds.right = bounds.left + collider->width;
+    bounds.top = position->y + collider->offset_y;
+    bounds.bottom = bounds.top + collider->height;
+
+    return bounds;
 }
 
+bool bounds_overlap(Bounds a, Bounds b)
+{
+    return a.left < b.right && a.right > b.left &&
+           a.top < b.bottom && a.bottom > b.top;
+}
 void update_collision_system(void)
 {
-    // TODO the system is not generic yet, this was build just to test if it works
-    // PositionComponent *first_entity_position = &components->position_components[entity_id];
-    // VelocityComponent *first_entity_velocity = &components->velocity_components[entity_id];
+    collision_count = 0;
+    for (int a = 0; a < number_of_entities - 1; a++)
+    {
+        if (!does_entity_have_component(a, Collision_Component_Signature))
+            continue;
+        if (!does_entity_have_component(a, Position_Component_Signature))
+            continue;
+
+        for (int b = a + 1; b < number_of_entities - 1; b++)
+        {
+            if (!does_entity_have_component(a, Collision_Component_Signature))
+                continue;
+            if (!does_entity_have_component(a, Position_Component_Signature))
+                continue;
+            if (!bounds_overlap(collider_bounds(a), collider_bounds(b)))
+                continue;
+
+            if (collision_count < MAX_COLLISIONS)
+            {
+                collisions[collision_count].a = a;
+                collisions[collision_count].b = b;
+                collision_count++;
+            }
+            printf("overlap: %d and %d\n", a, b);
+        }
+    }
 }

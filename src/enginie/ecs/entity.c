@@ -95,15 +95,18 @@ void add_velocity_component_to_entity(int entity_id, float speed)
     add_component_signature_to_entity(entity_id, Velocity_Component_Signature);
 }
 
-void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height, uint32_t layer, uint32_t mask, bool is_trigger, bool is_static)
-{
-    //@TODO add the proprties of the collision component
-    add_component_signature_to_entity(entity_id, Collision_Component_Signature);
-}
-
 void add_health_component_to_entity(int entity_id, int max_health)
 {
     components->health_components[entity_id].max_health = max_health;
     components->health_components[entity_id].health = components->health_components[entity_id].max_health;
     add_component_signature_to_entity(entity_id, Health_Component_Signature);
+}
+void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height)
+{
+    components->collision_components[entity_id].height = height;
+    components->collision_components[entity_id].width = width;
+    components->collision_components[entity_id].offset_x = offset_x;
+    components->collision_components[entity_id].offset_y = offset_y;
+
+    add_component_signature_to_entity(entity_id, Collision_Component_Signature);
 }
