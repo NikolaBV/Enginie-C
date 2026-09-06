@@ -25,6 +25,13 @@ bool bounds_overlap(Bounds a, Bounds b)
     return a.left < b.right && a.right > b.left &&
            a.top < b.bottom && a.bottom > b.top;
 }
+bool layers_should_test(int entity_a_id, int entity_b_id)
+{
+    CollisionComponent *a = &components->collision_components[entity_a_id];
+    CollisionComponent *b = &components->collision_components[entity_b_id];
+
+    return (a->layer & b->mask) || (b->layer & a->mask);
+}
 void update_collision_system(void)
 {
     collision_count = 0;
@@ -35,11 +42,13 @@ void update_collision_system(void)
         if (!does_entity_have_component(a, Position_Component_Signature))
             continue;
 
-        for (int b = a + 1; b < number_of_entities - 1; b++)
+        for (int b = a + 1; b < number_of_entities; b++)
         {
             if (!does_entity_have_component(a, Collision_Component_Signature))
                 continue;
             if (!does_entity_have_component(a, Position_Component_Signature))
+                continue;
+            if (!layers_should_test(a, b))
                 continue;
             if (!bounds_overlap(collider_bounds(a), collider_bounds(b)))
                 continue;

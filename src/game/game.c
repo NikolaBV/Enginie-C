@@ -36,7 +36,7 @@ int setup(void)
     add_velocity_component_to_entity(player_entity_id, 150);
     add_facing_component_to_entity(player_entity_id);
     add_health_component_to_entity(player_entity_id, 100);
-    add_collision_component_to_entity(player_entity_id, 32, 64, 32, 14);
+    add_collision_component_to_entity(player_entity_id, 32, 64, 32, 14, LAYER_PLAYER, (LAYER_ENEMY | LAYER_HAZARD | LAYER_PICKUP | LAYER_WORLD));
 
     int second_player_entity = create_entity();
     if (second_player_entity < 0)
@@ -49,7 +49,7 @@ int setup(void)
     add_velocity_component_to_entity(second_player_entity, 150);
     add_facing_component_to_entity(second_player_entity);
     add_health_component_to_entity(second_player_entity, 2000);
-    add_collision_component_to_entity(second_player_entity, 32, 64, 32, 14);
+    add_collision_component_to_entity(second_player_entity, 32, 64, 32, 14, LAYER_PLAYER, (LAYER_ENEMY | LAYER_HAZARD | LAYER_PICKUP | LAYER_WORLD));
 
     int tree_entity = create_entity();
     if (tree_entity < 0)
@@ -57,6 +57,7 @@ int setup(void)
 
     add_position_component_to_entity(tree_entity, 300, 300);
     add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3);
+    add_collision_component_to_entity(tree_entity, 36, 90, 24, 48, LAYER_WORLD, LAYER_WORLD);
 
     last_frame_time = SDL_GetTicks();
 

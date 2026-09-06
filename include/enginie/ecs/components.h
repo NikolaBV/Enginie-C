@@ -96,7 +96,20 @@ typedef struct
 {
     float offset_x, offset_y;
     float width, height;
+
+    uint32_t layer;
+    uint32_t mask;
 } CollisionComponent;
+
+typedef enum
+{
+    LAYER_PLAYER = (1u << 0),
+    LAYER_ENEMY = (1u << 1),
+    LAYER_WORLD = (1u << 2),
+    LAYER_PICKUP = (1u << 3),
+    LAYER_HAZARD = (1u << 4),
+
+} CollisionLayer;
 
 typedef struct
 {
