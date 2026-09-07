@@ -97,6 +97,8 @@ typedef struct
     float offset_x, offset_y;
     float width, height;
 
+    bool is_static;
+
     uint32_t layer;
     uint32_t mask;
 } CollisionComponent;

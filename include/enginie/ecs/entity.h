@@ -23,4 +23,4 @@ void add_animation_component_to_entity(int entity_id);
 void add_velocity_component_to_entity(int entity_id, float speed);
 void add_facing_component_to_entity(int entity_id);
 void add_health_component_to_entity(int entity_id, int max_health);
-void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height, uint32_t layer, uint32_t mask);
+void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height, bool is_static, uint32_t layer, uint32_t mask);

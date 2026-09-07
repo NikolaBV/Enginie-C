@@ -1,7 +1,10 @@
 #include "enginie/systems/collision.h"
 #include <enginie/ecs/components.h>
 #include <enginie/ecs/entity.h>
+
+#include <SDL3/SDL.h>
 #include <stdio.h>
+#include <math.h>
 
 int collision_count = 0;
 CollisionPair collisions[MAX_COLLISIONS];
@@ -32,6 +35,23 @@ bool layers_should_test(int entity_a_id, int entity_b_id)
 
     return (a->layer & b->mask) || (b->layer & a->mask);
 }
+void resolve_overlap(int a, int b)
+{
+    // TODO finish the logic
+    Bounds bounds_a = collider_bounds(a);
+    Bounds bounds_b = collider_bounds(b);
+
+    CollisionComponent *collider_a = &components->collision_components[a];
+    CollisionComponent *collider_b = &components->collision_components[b];
+
+    float start_x = fmaxf(bounds_a.left, bounds_b.left);
+    float end_x = fminf(bounds_a.right, bounds_b.right);
+    float overlap_x = end_x - start_x;
+
+    float start_y = fmaxf(bounds_a.top, bounds_b.top);
+    float end_y = fminf(bounds_a.bottom, bounds_b.bottom);
+    float overlap_y = end_y - start_y;
+}
 void update_collision_system(void)
 {
     collision_count = 0;
@@ -59,7 +79,7 @@ void update_collision_system(void)
                 collisions[collision_count].b = b;
                 collision_count++;
             }
-            printf("overlap: %d and %d\n", a, b);
+            resolve_overlap(a, b);
         }
     }
 }
