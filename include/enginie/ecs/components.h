@@ -14,8 +14,9 @@ typedef enum
     Animation_Component_Signature = (1 << 3),
     Velocity_Component_Signature = (1 << 4),
     Facing_Component_Signature = (1 << 5),
-    Collision_Component_Signature = (1 << 6),
-    Health_Component_Signature = (1 << 7)
+    Health_Component_Signature = (1 << 6),
+    Collision_Component_Signature = (1 << 7)
+
 } ComponentSignatures;
 
 typedef struct
@@ -87,21 +88,30 @@ typedef struct
 
 typedef struct
 {
-    float offset_x, offset_y; // collider origin, relative to position
-    float width, height;      // collider size in world units
-
-    uint32_t layer; // what I am           (one bit)
-    uint32_t mask;  // what I collide with (many bits)
-
-    bool is_trigger; // report overlap, never push out
-    bool is_static;  // never moved by resolution
-} CollisionComponent;
-
-typedef struct
-{
     int health;
     int max_health;
 } HealthComponent;
+
+typedef struct
+{
+    float offset_x, offset_y;
+    float width, height;
+
+    bool is_static;
+
+    uint32_t layer;
+    uint32_t mask;
+} CollisionComponent;
+
+typedef enum
+{
+    LAYER_PLAYER = (1u << 0),
+    LAYER_ENEMY = (1u << 1),
+    LAYER_WORLD = (1u << 2),
+    LAYER_PICKUP = (1u << 3),
+    LAYER_HAZARD = (1u << 4),
+
+} CollisionLayer;
 
 typedef struct
 {
@@ -111,7 +121,7 @@ typedef struct
     AnimationComponent animation_components[MAX_ENTITIES];
     VelocityComponent velocity_components[MAX_ENTITIES];
     FacingComponent facing_components[MAX_ENTITIES];
-    CollisionComponent collision_components[MAX_ENTITIES];
     HealthComponent health_components[MAX_ENTITIES];
+    CollisionComponent collision_components[MAX_ENTITIES];
 
 } ComponentLists;

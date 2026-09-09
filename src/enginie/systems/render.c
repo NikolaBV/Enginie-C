@@ -3,6 +3,7 @@
 #include "enginie/ecs/entity.h"
 #include "enginie/platform/texture_store.h"
 #include "enginie/systems/render.h"
+#include <enginie/systems/collision.h>
 
 void update_render_system(int entity_id, SDL_Renderer *renderer)
 {
@@ -41,5 +42,17 @@ void update_render_system(int entity_id, SDL_Renderer *renderer)
         SDL_FRect dest_rect = {position->x, position->y, sprite->sprite_width * sprite->scale, sprite->sprite_height * sprite->scale};
 
         SDL_RenderTextureRotated(renderer, entity_texture, &src_rect, &dest_rect, 0.0, NULL, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    }
+}
+
+void render_collider_debug(int entity_id, SDL_Renderer *renderer)
+{
+    if (does_entity_have_component(entity_id, Collision_Component_Signature) && does_entity_have_component(entity_id, Position_Component_Signature))
+    {
+        Bounds bounds = collider_bounds(entity_id);
+
+        SDL_FRect collision_rect = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderRect(renderer, &collision_rect);
     }
 }
