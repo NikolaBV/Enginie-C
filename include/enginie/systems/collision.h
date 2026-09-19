@@ -11,6 +11,7 @@ typedef struct
 {
     int a;
     int b;
+    bool trigger;
 } CollisionPair;
 
 extern CollisionPair collisions[];

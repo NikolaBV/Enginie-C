@@ -98,6 +98,7 @@ typedef struct
     float width, height;
 
     bool is_static;
+    bool is_trigger;
 
     uint32_t layer;
     uint32_t mask;

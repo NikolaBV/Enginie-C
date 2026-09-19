@@ -52,7 +52,23 @@ void render_collider_debug(int entity_id, SDL_Renderer *renderer)
         Bounds bounds = collider_bounds(entity_id);
 
         SDL_FRect collision_rect = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+        CollisionComponent *collision = &components->collision_components[entity_id];
+
+        if (collision->is_trigger)
+        {
+            set_render_draw_color(blue, renderer);
+        }
+        else if (collision->is_static)
+        {
+            set_render_draw_color(red, renderer);
+        }
+
+        else
+        {
+            set_render_draw_color(magenta, renderer);
+        }
+
         SDL_RenderRect(renderer, &collision_rect);
     }
 }

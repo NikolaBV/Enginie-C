@@ -71,8 +71,6 @@ void resolve_overlap(int a, int b)
     components->position_components[a].y += push_y * share_a;
     components->position_components[b].x -= push_x * share_b;
     components->position_components[b].y -= push_y * share_b;
-
-    printf("pair %d,%d  push = (%.1f, %.1f)\n", a, b, push_x, push_y);
 }
 void update_collision_system(void)
 {
@@ -95,13 +93,21 @@ void update_collision_system(void)
             if (!bounds_overlap(collider_bounds(a), collider_bounds(b)))
                 continue;
 
+            CollisionComponent *collision_a = &components->collision_components[a];
+            CollisionComponent *collision_b = &components->collision_components[b];
+
+            bool trigger = collision_a->is_trigger || collision_b->is_trigger;
+
             if (collision_count < MAX_COLLISIONS)
             {
                 collisions[collision_count].a = a;
                 collisions[collision_count].b = b;
+                collisions[collision_count].trigger = trigger;
                 collision_count++;
             }
-            resolve_overlap(a, b);
+
+            if (!trigger)
+                resolve_overlap(a, b);
         }
     }
 }
