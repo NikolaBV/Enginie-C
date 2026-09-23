@@ -11,8 +11,8 @@
 #include "enginie/systems/input.h"
 #include "enginie/systems/movement.h"
 #include "enginie/systems/render.h"
-#include "enginie/systems/collision.h"
 #include "enginie/systems/health.h"
+#include "enginie/systems/collision.h"
 #include "game/content.h"
 #include "game/game.h"
 
@@ -35,8 +35,9 @@ int setup(void)
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 150);
     add_facing_component_to_entity(player_entity_id);
-    add_collision_component_to_entity(player_entity_id);
     add_health_component_to_entity(player_entity_id, 100);
+
+    add_collision_component_to_entity(player_entity_id, 32, 64, 32, 14, false, false, LAYER_PLAYER, (LAYER_PLAYER | LAYER_ENEMY | LAYER_HAZARD | LAYER_PICKUP | LAYER_WORLD));
 
     int second_player_entity = create_entity();
     if (second_player_entity < 0)
@@ -49,6 +50,7 @@ int setup(void)
     add_velocity_component_to_entity(second_player_entity, 150);
     add_facing_component_to_entity(second_player_entity);
     add_health_component_to_entity(second_player_entity, 2000);
+    add_collision_component_to_entity(second_player_entity, 32, 64, 32, 14, false, false, LAYER_PLAYER, (LAYER_PLAYER | LAYER_ENEMY | LAYER_HAZARD | LAYER_PICKUP | LAYER_WORLD));
 
     int tree_entity = create_entity();
     if (tree_entity < 0)
@@ -56,6 +58,7 @@ int setup(void)
 
     add_position_component_to_entity(tree_entity, 300, 300);
     add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3);
+    add_collision_component_to_entity(tree_entity, 36, 90, 24, 48, true, false, LAYER_WORLD, LAYER_WORLD);
 
     last_frame_time = SDL_GetTicks();
 
@@ -67,8 +70,18 @@ void update(float delta_time)
     {
         update_input_system(entity_id);
         update_animation_selection_system(entity_id);
-        update_position_system(entity_id, delta_time);
-        update_health_system(entity_id);
+    }
+
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+        update_position_system(entity_id, delta_time, AXIS_X);
+    update_collision_system(AXIS_X);
+
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+        update_position_system(entity_id, delta_time, AXIS_Y);
+    update_collision_system(AXIS_Y);
+
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+    {
         update_facing_system(entity_id);
         update_animation_system(entity_id, delta_time);
     }
@@ -81,6 +94,10 @@ void render(void)
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
     {
         update_render_system(entity_id, renderer);
+    }
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+    {
+        render_collider_debug(entity_id, renderer);
     }
 
     SDL_RenderPresent(renderer);
