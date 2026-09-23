@@ -70,12 +70,16 @@ void update(float delta_time)
     {
         update_input_system(entity_id);
         update_animation_selection_system(entity_id);
-        update_position_system(entity_id, delta_time);
-
-        update_facing_system(entity_id);
-        update_animation_system(entity_id, delta_time);
     }
-    update_collision_system();
+
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+        update_position_system(entity_id, delta_time, AXIS_X);
+    update_collision_system(AXIS_X);
+
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+        update_position_system(entity_id, delta_time, AXIS_Y);
+    update_collision_system(AXIS_Y);
+
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
     {
         update_facing_system(entity_id);

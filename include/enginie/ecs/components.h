@@ -106,6 +106,12 @@ typedef struct
 
 typedef enum
 {
+    AXIS_X,
+    AXIS_Y
+} Axis;
+
+typedef enum
+{
     LAYER_PLAYER = (1u << 0),
     LAYER_ENEMY = (1u << 1),
     LAYER_WORLD = (1u << 2),

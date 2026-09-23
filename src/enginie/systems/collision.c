@@ -36,43 +36,50 @@ bool layers_should_test(int entity_a_id, int entity_b_id)
     return (a->layer & b->mask) || (b->layer & a->mask);
 }
 
-void resolve_overlap(int a, int b)
+void resolve_overlap(int a, int b, Axis axis)
 {
-    CollisionComponent *collision_a = &components->collision_components[a];
-    CollisionComponent *collision_b = &components->collision_components[b];
+    const CollisionComponent *ca = &components->collision_components[a];
+    const CollisionComponent *cb = &components->collision_components[b];
 
-    if (collision_a->is_static && collision_b->is_static)
+    if (ca->is_static && cb->is_static) // two trees: nothing to separate, ever
         return;
 
-    Bounds bounds_a = collider_bounds(a);
-    Bounds bounds_b = collider_bounds(b);
+    Bounds ba = collider_bounds(a);
+    Bounds bb = collider_bounds(b);
 
-    float overlap_x = fminf(bounds_a.right, bounds_b.right) - fmaxf(bounds_a.left, bounds_b.left);
-    float overlap_y = fminf(bounds_a.bottom, bounds_b.bottom) - fmaxf(bounds_a.top, bounds_b.top);
-
-    float center_a_x = (bounds_a.left + bounds_a.right) * 0.5f;
-    float center_b_x = (bounds_b.left + bounds_b.right) * 0.5f;
-
-    float center_a_y = (bounds_a.top + bounds_a.bottom) * 0.5f;
-    float center_b_y = (bounds_b.top + bounds_b.bottom) * 0.5f;
-
-    float push_x = 0.0f;
-    float push_y = 0.0f;
-
-    if (overlap_x < overlap_y)
-        push_x = (center_a_x < center_b_x) ? -overlap_x : overlap_x;
+    // only this axis has moved since the last resolve, so only this axis is undone
+    float overlap, center_a, center_b;
+    if (axis == AXIS_X)
+    {
+        overlap = fminf(ba.right, bb.right) - fmaxf(ba.left, bb.left);
+        center_a = (ba.left + ba.right) * 0.5f;
+        center_b = (bb.left + bb.right) * 0.5f;
+    }
     else
-        push_y = (center_a_y < center_b_y) ? -overlap_y : overlap_y;
+    {
+        overlap = fminf(ba.bottom, bb.bottom) - fmaxf(ba.top, bb.top);
+        center_a = (ba.top + ba.bottom) * 0.5f;
+        center_b = (bb.top + bb.bottom) * 0.5f;
+    }
 
-    float share_a = collision_a->is_static ? 0.0f : (collision_b->is_static ? 1.0f : 0.5f);
+    float push = (center_a < center_b) ? -overlap : overlap;
+
+    // a static body absorbs none of the correction; two dynamic bodies split it
+    float share_a = ca->is_static ? 0.0f : (cb->is_static ? 1.0f : 0.5f);
     float share_b = 1.0f - share_a;
 
-    components->position_components[a].x += push_x * share_a;
-    components->position_components[a].y += push_y * share_a;
-    components->position_components[b].x -= push_x * share_b;
-    components->position_components[b].y -= push_y * share_b;
+    if (axis == AXIS_X)
+    {
+        components->position_components[a].x += push * share_a;
+        components->position_components[b].x -= push * share_b;
+    }
+    else
+    {
+        components->position_components[a].y += push * share_a;
+        components->position_components[b].y -= push * share_b;
+    }
 }
-void update_collision_system(void)
+void update_collision_system(Axis axis)
 {
     collision_count = 0;
     for (int a = 0; a < number_of_entities - 1; a++)
@@ -107,7 +114,7 @@ void update_collision_system(void)
             }
 
             if (!trigger)
-                resolve_overlap(a, b);
+                resolve_overlap(a, b, axis);
         }
     }
 }
