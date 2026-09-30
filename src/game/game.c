@@ -27,7 +27,7 @@ static void on_collision_enter(int a, int b)
     HealthComponent *health_a = &components->health_components[a];
     HealthComponent *health_b = &components->health_components[b];
 
-    if ((collison_a->mask & LAYER_PLAYER) && (collison_b->mask & LAYER_PLAYER))
+    if ((collison_a->layer & LAYER_PLAYER) && (collison_b->layer & LAYER_PLAYER))
     {
         apply_damage(a, BUMP_DAMAGE);
         apply_damage(b, BUMP_DAMAGE);
@@ -104,10 +104,6 @@ int setup(void)
     add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3);
     add_collision_component_to_entity(tree_entity, 36, 90, 24, 48, true, false, LAYER_WORLD, LAYER_WORLD);
 
-    apply_damage(player_entity_id, 10);
-    heal(player_entity_id, 10);
-    heal(player_entity_id, 100);
-
     last_frame_time = SDL_GetTicks();
 
     return 0;
@@ -121,7 +117,6 @@ void update(float delta_time)
     }
     collision_begin_frame();
 
-    collision_begin_frame();
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
         update_position_system(entity_id, delta_time, AXIS_X);
     update_collision_system(AXIS_X);

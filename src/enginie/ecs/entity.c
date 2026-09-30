@@ -97,12 +97,16 @@ void add_velocity_component_to_entity(int entity_id, float speed)
 
 void add_health_component_to_entity(int entity_id, int max_health)
 {
+    assert(entity_id >= 0 && entity_id < MAX_ENTITIES);
+
     components->health_components[entity_id].max_health = max_health;
     components->health_components[entity_id].health = components->health_components[entity_id].max_health;
     add_component_signature_to_entity(entity_id, Health_Component_Signature);
 }
 void add_collision_component_to_entity(int entity_id, float offset_x, float offset_y, float width, float height, bool is_static, bool is_trigger, uint32_t layer, uint32_t mask)
 {
+    assert(entity_id >= 0 && entity_id < MAX_ENTITIES);
+
     components->collision_components[entity_id].height = height;
     components->collision_components[entity_id].width = width;
     components->collision_components[entity_id].offset_x = offset_x;

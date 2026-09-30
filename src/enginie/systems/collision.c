@@ -39,7 +39,7 @@ bool bounds_overlap(Bounds a, Bounds b)
     return a.left < b.right && a.right > b.left &&
            a.top < b.bottom && a.bottom > b.top;
 }
-bool layers_should_test(int entity_a_id, int entity_b_id)
+static bool layers_should_test(int entity_a_id, int entity_b_id)
 {
     CollisionComponent *a = &components->collision_components[entity_a_id];
     CollisionComponent *b = &components->collision_components[entity_b_id];
@@ -47,7 +47,7 @@ bool layers_should_test(int entity_a_id, int entity_b_id)
     return (a->layer & b->mask) || (b->layer & a->mask);
 }
 
-void resolve_overlap(int a, int b, Axis axis)
+static void resolve_overlap(int a, int b, Axis axis)
 {
     const CollisionComponent *ca = &components->collision_components[a];
     const CollisionComponent *cb = &components->collision_components[b];
@@ -107,7 +107,6 @@ static void record_pair(int a, int b, bool trigger)
 
 void update_collision_system(Axis axis)
 {
-    current_collision_count = 0;
     for (int a = 0; a < number_of_entities - 1; a++)
     {
         if (!does_entity_have_component(a, Collision_Component_Signature))
@@ -117,9 +116,9 @@ void update_collision_system(Axis axis)
 
         for (int b = a + 1; b < number_of_entities; b++)
         {
-            if (!does_entity_have_component(a, Collision_Component_Signature))
+            if (!does_entity_have_component(b, Collision_Component_Signature))
                 continue;
-            if (!does_entity_have_component(a, Position_Component_Signature))
+            if (!does_entity_have_component(b, Position_Component_Signature))
                 continue;
             if (!layers_should_test(a, b))
                 continue;
@@ -131,13 +130,6 @@ void update_collision_system(Axis axis)
 
             bool trigger = collision_a->is_trigger || collision_b->is_trigger;
 
-            if (current_collision_count < MAX_COLLISIONS)
-            {
-                collisions[current_collision_count].a = a;
-                collisions[current_collision_count].b = b;
-                collisions[current_collision_count].trigger = trigger;
-                current_collision_count++;
-            }
             record_pair(a, b, trigger);
             if (!trigger)
                 resolve_overlap(a, b, axis);

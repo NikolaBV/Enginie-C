@@ -1,6 +1,9 @@
+#include <assert.h>
+
 #include <enginie/ecs/components.h>
 #include <enginie/ecs/entity.h>
-#include <assert.h>
+#include "enginie/systems/health.h"
+
 void apply_damage(int entity_id, int amount)
 {
     assert(entity_id >= 0 && entity_id < MAX_ENTITIES);
