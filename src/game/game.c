@@ -16,6 +16,51 @@
 #include "game/content.h"
 #include "game/game.h"
 
+#define BUMP_DAMAGE 10
+#define TREE_HEAL 15
+
+static void on_collision_enter(int a, int b)
+{
+    CollisionComponent *collison_a = &components->collision_components[a];
+    CollisionComponent *collison_b = &components->collision_components[b];
+
+    HealthComponent *health_a = &components->health_components[a];
+    HealthComponent *health_b = &components->health_components[b];
+
+    if ((collison_a->mask & LAYER_PLAYER) && (collison_b->mask & LAYER_PLAYER))
+    {
+        apply_damage(a, BUMP_DAMAGE);
+        apply_damage(b, BUMP_DAMAGE);
+
+        printf("Entity %d health is at: %d\n", a, health_a->health);
+        printf("Entity %d health is at: %d\n", b, health_b->health);
+        return;
+    }
+
+    if ((collison_a->layer & LAYER_PLAYER) && (collison_b->layer & LAYER_WORLD))
+    {
+        heal(a, TREE_HEAL);
+        printf("Entity %d health is at: %d\n", a, health_a->health);
+    }
+    else if ((collison_b->layer & LAYER_PLAYER) && (collison_a->layer & LAYER_WORLD))
+    {
+        heal(b, TREE_HEAL);
+        printf("Entity %d health is at: %d\n", b, health_b->health);
+    }
+}
+
+static void resolve_collision_events(void)
+{
+    for (int i = 0; i < current_collision_count; ++i)
+    {
+        int a = collisions[i].a;
+        int b = collisions[i].b;
+
+        // fire on the frame contact STARTS, not for every frame it continues
+        if (!was_overlapping(a, b))
+            on_collision_enter(a, b);
+    }
+}
 int setup(void)
 {
     if (!load_player_clips(renderer))
@@ -36,7 +81,6 @@ int setup(void)
     add_velocity_component_to_entity(player_entity_id, 150);
     add_facing_component_to_entity(player_entity_id);
     add_health_component_to_entity(player_entity_id, 100);
-
     add_collision_component_to_entity(player_entity_id, 32, 64, 32, 14, false, false, LAYER_PLAYER, (LAYER_PLAYER | LAYER_ENEMY | LAYER_HAZARD | LAYER_PICKUP | LAYER_WORLD));
 
     int second_player_entity = create_entity();
@@ -49,7 +93,7 @@ int setup(void)
     add_animation_component_to_entity(second_player_entity);
     add_velocity_component_to_entity(second_player_entity, 150);
     add_facing_component_to_entity(second_player_entity);
-    add_health_component_to_entity(second_player_entity, 2000);
+    add_health_component_to_entity(second_player_entity, 100);
     add_collision_component_to_entity(second_player_entity, 32, 64, 32, 14, false, false, LAYER_PLAYER, (LAYER_PLAYER | LAYER_ENEMY | LAYER_HAZARD | LAYER_PICKUP | LAYER_WORLD));
 
     int tree_entity = create_entity();
@@ -59,6 +103,10 @@ int setup(void)
     add_position_component_to_entity(tree_entity, 300, 300);
     add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3);
     add_collision_component_to_entity(tree_entity, 36, 90, 24, 48, true, false, LAYER_WORLD, LAYER_WORLD);
+
+    apply_damage(player_entity_id, 10);
+    heal(player_entity_id, 10);
+    heal(player_entity_id, 100);
 
     last_frame_time = SDL_GetTicks();
 
@@ -71,7 +119,9 @@ void update(float delta_time)
         update_input_system(entity_id);
         update_animation_selection_system(entity_id);
     }
+    collision_begin_frame();
 
+    collision_begin_frame();
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
         update_position_system(entity_id, delta_time, AXIS_X);
     update_collision_system(AXIS_X);
@@ -79,6 +129,7 @@ void update(float delta_time)
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
         update_position_system(entity_id, delta_time, AXIS_Y);
     update_collision_system(AXIS_Y);
+    resolve_collision_events();
 
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
     {
@@ -98,6 +149,10 @@ void render(void)
     for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
     {
         render_collider_debug(entity_id, renderer);
+    }
+    for (int entity_id = 0; entity_id < number_of_entities; ++entity_id)
+    {
+        render_health_bar(entity_id, renderer);
     }
 
     SDL_RenderPresent(renderer);

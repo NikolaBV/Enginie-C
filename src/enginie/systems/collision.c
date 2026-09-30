@@ -6,9 +6,20 @@
 #include <stdio.h>
 #include <math.h>
 
-int collision_count = 0;
 CollisionPair collisions[MAX_COLLISIONS];
+int current_collision_count = 0;
 
+static CollisionPair prev_collisions[MAX_COLLISIONS];
+static int prev_collisions_count = 0;
+
+bool was_overlapping(int a, int b)
+{
+    for (int i = 0; i < prev_collisions_count; ++i)
+        if (prev_collisions[i].a == a && prev_collisions[i].b == b)
+            return true;
+
+    return false;
+}
 Bounds collider_bounds(int entity_id)
 {
     CollisionComponent *collider = &components->collision_components[entity_id];
@@ -79,9 +90,24 @@ void resolve_overlap(int a, int b, Axis axis)
         components->position_components[b].y -= push * share_b;
     }
 }
+static void record_pair(int a, int b, bool trigger)
+{
+    for (int i = 0; i < current_collision_count; ++i)
+        if (collisions[i].a == a && collisions[i].b == b)
+            return;
+
+    if (current_collision_count >= MAX_COLLISIONS)
+        return;
+
+    collisions[current_collision_count].a = a;
+    collisions[current_collision_count].b = b;
+    collisions[current_collision_count].trigger = trigger;
+    current_collision_count++;
+}
+
 void update_collision_system(Axis axis)
 {
-    collision_count = 0;
+    current_collision_count = 0;
     for (int a = 0; a < number_of_entities - 1; a++)
     {
         if (!does_entity_have_component(a, Collision_Component_Signature))
@@ -105,16 +131,25 @@ void update_collision_system(Axis axis)
 
             bool trigger = collision_a->is_trigger || collision_b->is_trigger;
 
-            if (collision_count < MAX_COLLISIONS)
+            if (current_collision_count < MAX_COLLISIONS)
             {
-                collisions[collision_count].a = a;
-                collisions[collision_count].b = b;
-                collisions[collision_count].trigger = trigger;
-                collision_count++;
+                collisions[current_collision_count].a = a;
+                collisions[current_collision_count].b = b;
+                collisions[current_collision_count].trigger = trigger;
+                current_collision_count++;
             }
-
+            record_pair(a, b, trigger);
             if (!trigger)
                 resolve_overlap(a, b, axis);
         }
     }
+}
+
+void collision_begin_frame(void)
+{
+    for (int i = 0; i < current_collision_count; ++i)
+        prev_collisions[i] = collisions[i];
+
+    prev_collisions_count = current_collision_count;
+    current_collision_count = 0;
 }
