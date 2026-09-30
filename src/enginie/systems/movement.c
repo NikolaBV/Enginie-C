@@ -3,7 +3,7 @@
 #include "enginie/ecs/entity.h"
 #include "enginie/systems/movement.h"
 
-void update_position_system(int entity_id, float delta_time)
+void update_position_system(int entity_id, float delta_time, Axis axis)
 {
     assert(entity_id >= 0 && entity_id < MAX_ENTITIES);
 
@@ -12,7 +12,9 @@ void update_position_system(int entity_id, float delta_time)
         PositionComponent *position = &components->position_components[entity_id];
         VelocityComponent *velocity = &components->velocity_components[entity_id];
 
-        position->x += velocity->x * delta_time;
-        position->y += velocity->y * delta_time;
+        if (axis == AXIS_X)
+            position->x += velocity->x * delta_time;
+        else
+            position->y += velocity->y * delta_time;
     }
 }

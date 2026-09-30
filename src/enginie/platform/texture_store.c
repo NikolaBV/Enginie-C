@@ -5,6 +5,10 @@
 
 SDL_Texture *textures[MAX_TEXTURES_COUNT];
 uint32_t textures_count = 0;
+Color red = {255, 0, 0, 255};
+Color green = {0, 255, 0, 255};
+Color blue = {0, 0, 255, 255};
+Color magenta = {255, 0, 255, 255};
 
 SDL_Texture *get_texture_by_texture_id(uint32_t texture_id)
 {
@@ -64,4 +68,8 @@ uint32_t load_texture_or_fail(const char *path, SDL_Renderer *renderer)
     }
 
     return id;
+}
+void set_render_draw_color(Color color, SDL_Renderer *renderer)
+{
+    SDL_SetRenderDrawColor(renderer, color.red, color.green, color.blue, color.alpha);
 }

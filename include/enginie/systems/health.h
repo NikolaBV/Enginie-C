@@ -1,1 +1,7 @@
-// TODO Implement health logic
+#pragma once
+
+#include <stdbool.h>
+
+void apply_damage(int entity_id, int amount);
+void heal(int entity_id, int amount);
+bool is_dead(int entity_id);

@@ -1,14 +1,26 @@
+#pragma once
 #include <stdbool.h>
-#include "enginie/core/config.h"
+#include "enginie/ecs/components.h"
 
 typedef struct
 {
-    int a, b;
+    float left, right, top, bottom;
+} Bounds;
+
+typedef struct
+{
+    int a;
+    int b;
     bool trigger;
 } CollisionPair;
-extern CollisionPair collisions[MAX_COLLISIONS];
-extern int collision_count;
 
-void update_collision_system(void);
-bool aabb(float first_entity_x, float first_entity_y, float second_entity_x, float second_entity_y,
-          int first_entity_width, int first_entity_height, int second_entity_width, int second_entity_height);
+extern int current_collision_count;
+extern CollisionPair collisions[MAX_COLLISIONS];
+
+Bounds collider_bounds(int entity_id);
+
+bool bounds_overlap(Bounds a, Bounds b);
+bool was_overlapping(int a, int b);
+
+void update_collision_system(Axis axis);
+void collision_begin_frame(void);
