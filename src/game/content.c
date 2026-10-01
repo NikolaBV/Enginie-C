@@ -25,6 +25,7 @@ static const char *player_clip_paths[] = {
 
 const char *assets_paths[] = {
     [PLANTS] = "assets/plants.png",
+    [BLACK_LINE] = "assets/black-line.png",
 };
 AnimationClip player_clips[] = {
     [CLIP_IDLE] = {UINT32_MAX, 4, 0.15f, true},

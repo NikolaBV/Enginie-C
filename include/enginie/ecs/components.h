@@ -58,7 +58,8 @@ typedef struct
 
 typedef struct
 {
-    int scale;
+    int scale_x;
+    int scale_y;
 
     uint32_t texture_id;
     uint32_t sprite_width;

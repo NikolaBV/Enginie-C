@@ -13,7 +13,8 @@ typedef enum
 
 typedef enum
 {
-    PLANTS
+    PLANTS,
+    BLACK_LINE
 } Assets_Paths;
 
 extern const char *assets_paths[];

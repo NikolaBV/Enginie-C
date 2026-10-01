@@ -67,7 +67,11 @@ int setup(void)
         return 1;
 
     uint32_t texture_id_of_tree = load_texture_or_fail(assets_paths[PLANTS], renderer);
+    uint32_t floor_texture_id = load_image_as_texture(assets_paths[BLACK_LINE], renderer);
+
     if (texture_id_of_tree == UINT32_MAX)
+        return 1;
+    if (floor_texture_id == UINT32_MAX)
         return 1;
 
     int player_entity_id = create_entity();
@@ -75,7 +79,7 @@ int setup(void)
         return 1;
 
     add_position_component_to_entity(player_entity_id, 100, 100);
-    add_sprite_component_to_entity(player_entity_id, player_clips[CLIP_IDLE].texture_id, 32, 32, 3);
+    add_sprite_component_to_entity(player_entity_id, player_clips[CLIP_IDLE].texture_id, 32, 32, 3, 3);
     add_keyboard_input_component_to_entity(player_entity_id, wasd_layout);
     add_animation_component_to_entity(player_entity_id);
     add_velocity_component_to_entity(player_entity_id, 150);
@@ -88,7 +92,7 @@ int setup(void)
         return 1;
 
     add_position_component_to_entity(second_player_entity, 200, 200);
-    add_sprite_component_to_entity(second_player_entity, player_clips[CLIP_IDLE].texture_id, 32, 32, 3);
+    add_sprite_component_to_entity(second_player_entity, player_clips[CLIP_IDLE].texture_id, 32, 32, 3, 3);
     add_keyboard_input_component_to_entity(second_player_entity, arrows_layout);
     add_animation_component_to_entity(second_player_entity);
     add_velocity_component_to_entity(second_player_entity, 150);
@@ -101,8 +105,16 @@ int setup(void)
         return 1;
 
     add_position_component_to_entity(tree_entity, 300, 300);
-    add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3);
+    add_sprite_component_to_entity(tree_entity, texture_id_of_tree, 32, 54, 3, 3);
     add_collision_component_to_entity(tree_entity, 36, 90, 24, 48, true, false, LAYER_WORLD, LAYER_WORLD);
+
+    int floor = create_entity();
+    add_position_component_to_entity(floor, 0, 300);
+    add_sprite_component_to_entity(floor, floor_texture_id, 32, 32, 25, 3);
+
+    SpriteComponent *floor_sprite = &components->sprite_components[floor];
+    add_collision_component_to_entity(floor, 0, 42, floor_sprite->sprite_width * floor_sprite->scale_x,
+                                      floor_sprite->sprite_height, true, false, LAYER_WORLD, LAYER_WORLD);
 
     last_frame_time = SDL_GetTicks();
 

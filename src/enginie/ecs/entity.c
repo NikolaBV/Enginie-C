@@ -39,7 +39,7 @@ void add_position_component_to_entity(int entity_id, float x, float y)
 
     add_component_signature_to_entity(entity_id, Position_Component_Signature);
 }
-void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t sprite_width, uint32_t sprite_height, int scale)
+void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t sprite_width, uint32_t sprite_height, int scale_x, int scale_y)
 {
     assert(entity_id >= 0 && entity_id < MAX_ENTITIES);
     components->sprite_components[entity_id].sprite_height = sprite_height;
@@ -47,11 +47,16 @@ void add_sprite_component_to_entity(int entity_id, uint32_t texture_id, uint32_t
     components->sprite_components[entity_id].texture_id = texture_id;
 
     // default the scaler to a value that keeps the sprite unchanged if a number 0 or under is passed
-    if (scale <= 0)
+    if (scale_x <= 0)
     {
-        scale = 1;
+        scale_x = 1;
     }
-    components->sprite_components[entity_id].scale = scale;
+    if (scale_y <= 0)
+    {
+        scale_x = 1;
+    }
+    components->sprite_components[entity_id].scale_x = scale_x;
+    components->sprite_components[entity_id].scale_y = scale_y;
 
     add_component_signature_to_entity(entity_id, Sprite_Component_Signature);
 }

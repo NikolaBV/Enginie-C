@@ -39,7 +39,7 @@ void update_render_system(int entity_id, SDL_Renderer *renderer)
         }
 
         SDL_FRect src_rect = {src_rect_x, facing_row * sprite->sprite_height, sprite->sprite_width, sprite->sprite_height};
-        SDL_FRect dest_rect = {position->x, position->y, sprite->sprite_width * sprite->scale, sprite->sprite_height * sprite->scale};
+        SDL_FRect dest_rect = {position->x, position->y, sprite->sprite_width * sprite->scale_x, sprite->sprite_height * sprite->scale_y};
 
         SDL_RenderTextureRotated(renderer, entity_texture, &src_rect, &dest_rect, 0.0, NULL, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
     }
@@ -91,7 +91,7 @@ void render_health_bar(int entity_id, SDL_Renderer *renderer)
     if (health->max_health <= 0)
         return;
 
-    float width = (float)(sprite->sprite_width * sprite->scale);
+    float width = (float)(sprite->sprite_width * sprite->scale_x);
     float fraction = (float)health->health / (float)health->max_health;
 
     SDL_FRect back = {position->x, position->y - 10.0f, width, 6.0f};
